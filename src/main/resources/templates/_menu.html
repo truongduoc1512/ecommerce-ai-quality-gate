@@ -1,0 +1,475 @@
+<div class="menu-container"
+   xmlns:th="http://www.thymeleaf.org"
+   xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4" >
+   
+   <style>
+      /* ===== NAVBAR BASE ===== */
+      .navbar {
+         font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+         background-color: #ffffff;
+         border-bottom: 1px solid #E5E7EB !important;
+         padding-top: 10px !important;
+         padding-bottom: 10px !important;
+         transition: box-shadow 0.3s;
+      }
+      .navbar.scrolled {
+         box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+      }
+
+      /* ===== BRAND ===== */
+      .navbar-brand {
+         font-family: 'Inter', sans-serif;
+         font-size: 21px;
+         font-weight: 800 !important;
+         letter-spacing: -0.7px;
+         color: #111827 !important;
+         margin-right: 32px;
+      }
+      .navbar-brand .brand-highlight { color: #2563EB; }
+
+      /* ===== NAV LINKS ===== */
+      .navbar-nav .nav-link {
+         font-size: 13.5px;
+         font-weight: 600 !important;
+         color: #4B5563 !important;
+         padding: 7px 14px !important;
+         border-radius: 8px;
+         transition: color 0.18s, background-color 0.18s;
+         letter-spacing: -0.1px;
+      }
+      .navbar-nav .nav-link:hover {
+         color: #2563EB !important;
+         background-color: #EFF6FF;
+      }
+      .navbar-nav .nav-item.active .nav-link {
+         color: #2563EB !important;
+         background-color: #EFF6FF;
+         font-weight: 700 !important;
+      }
+
+      /* ===== SEARCH INPUT ===== */
+      .search-container {
+         position: relative;
+         width: 260px;
+         max-width: 100%;
+      }
+      .search-input {
+         background-color: #F3F4F6 !important;
+         border: 1.5px solid transparent !important;
+         border-radius: 10px !important;
+         font-size: 13px !important;
+         padding-left: 38px !important;
+         padding-right: 12px !important;
+         height: 38px !important;
+         transition: all 0.2s !important;
+         color: #111827 !important;
+      }
+      .search-input::placeholder { color: #9CA3AF !important; }
+      .search-input:focus {
+         background-color: #ffffff !important;
+         border-color: #2563EB !important;
+         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+      }
+      .search-icon-left {
+         position: absolute;
+         left: 12px;
+         top: 50%;
+         transform: translateY(-50%);
+         color: #9CA3AF;
+         font-size: 13px;
+         pointer-events: none;
+      }
+
+      /* ===== ICON BUTTONS ===== */
+      .action-icon-btn {
+         color: #6B7280 !important;
+         position: relative;
+         transition: color 0.18s, background-color 0.18s;
+         border-radius: 10px;
+         width: 38px;
+         height: 38px;
+         display: inline-flex;
+         align-items: center;
+         justify-content: center;
+         text-decoration: none !important;
+      }
+      .action-icon-btn:hover {
+         color: #2563EB !important;
+         background-color: #EFF6FF;
+      }
+      .badge-counter {
+         position: absolute;
+         top: 3px;
+         right: 3px;
+         font-size: 9px;
+         font-weight: 700;
+         border-radius: 50%;
+         width: 16px;
+         height: 16px;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         line-height: 1;
+         border: 1.5px solid #fff;
+      }
+
+      /* ===== USER AVATAR ===== */
+      .user-avatar-wrapper {
+         position: relative;
+         display: inline-block;
+      }
+      .user-avatar {
+         width: 36px;
+         height: 36px;
+         object-fit: cover;
+         border-radius: 10px;
+         border: 2px solid #E5E7EB;
+         transition: border-color 0.2s, box-shadow 0.2s;
+         display: block;
+      }
+      .user-avatar-initials {
+         width: 36px;
+         height: 36px;
+         border-radius: 10px;
+         background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+         color: #fff;
+         font-size: 13px;
+         font-weight: 700;
+         display: inline-flex;
+         align-items: center;
+         justify-content: center;
+         letter-spacing: -0.3px;
+         border: 2px solid #E5E7EB;
+         transition: border-color 0.2s, box-shadow 0.2s;
+      }
+      .user-online-dot {
+         position: absolute;
+         bottom: -1px;
+         right: -1px;
+         width: 10px;
+         height: 10px;
+         background-color: #10B981;
+         border-radius: 50%;
+         border: 2px solid #fff;
+      }
+
+      /* ===== DROPDOWN ===== */
+      .navbar-dropdown-menu {
+         border: 1px solid #E5E7EB !important;
+         border-radius: 14px !important;
+         box-shadow: 0 8px 30px rgba(0,0,0,0.1) !important;
+         min-width: 220px;
+         padding: 6px !important;
+         margin-top: 10px !important;
+      }
+      .navbar-dropdown-menu .dropdown-header {
+         background-color: #F9FAFB;
+         border-radius: 10px;
+         padding: 10px 12px;
+         margin-bottom: 4px;
+      }
+      .navbar-dropdown-menu .dropdown-item {
+         border-radius: 8px;
+         padding: 9px 12px;
+         font-size: 13.5px;
+         font-weight: 500;
+         color: #374151;
+         display: flex;
+         align-items: center;
+         gap: 10px;
+         transition: background-color 0.15s, color 0.15s;
+      }
+      .navbar-dropdown-menu .dropdown-item:hover {
+         background-color: #EFF6FF;
+         color: #2563EB;
+      }
+      .navbar-dropdown-menu .dropdown-item.text-danger:hover {
+         background-color: #FEF2F2;
+         color: #DC2626 !important;
+      }
+      .navbar-dropdown-menu .dropdown-divider {
+         margin: 4px 0;
+         border-color: #F3F4F6;
+      }
+      .navbar-dropdown-menu .dd-icon {
+         width: 28px;
+         height: 28px;
+         border-radius: 7px;
+         display: inline-flex;
+         align-items: center;
+         justify-content: center;
+         font-size: 12px;
+         flex-shrink: 0;
+      }
+
+      /* ===== LOGIN BUTTON ===== */
+      .btn-login {
+         border-radius: 10px !important;
+         font-weight: 700 !important;
+         font-size: 13.5px !important;
+         padding: 7px 18px !important;
+         border: 1.5px solid #111827 !important;
+         color: #111827 !important;
+         background: transparent;
+         transition: all 0.2s;
+      }
+      .btn-login:hover {
+         background-color: #111827 !important;
+         color: #ffffff !important;
+      }
+   </style>
+
+   <nav class="navbar navbar-expand-lg navbar-light" id="nav-main">
+      <div class="container d-flex justify-content-between align-items-center">
+         
+         <!-- 1. Brand Logo -->
+         <a class="navbar-brand d-flex align-items-center" th:href="@{/}">
+            <i class="fas fa-shoe-prints mr-2" style="transform: rotate(-30deg); color: #2563EB; font-size: 20px;"></i>
+            <span>SHOE<span class="brand-highlight">SHOP</span></span>
+         </a>
+
+         <!-- Toggler for mobile -->
+         <button class="navbar-toggler border-0" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+         </button>
+
+         <!-- 2. Main Navigation Links -->
+         <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mx-auto">
+               <li class="nav-item">
+                  <a class="nav-link" th:href="@{/}">Trang Chủ</a>
+               </li>
+               <li class="nav-item">
+                  <a class="nav-link" th:href="@{/productList}">Sản Phẩm</a>
+               </li>
+               
+               <th:block sec:authorize="hasAnyRole('ROLE_ADMIN','ROLE_USER')">
+                  <li class="nav-item">
+                     <a th:href="@{/admin/orderList}" class="nav-link">Đơn Hàng</a>
+                  </li>
+                  <li class="nav-item" sec:authorize="hasRole('ROLE_ADMIN')">
+                     <a th:href="@{/admin/accountInfo}" class="nav-link">Dashboard</a>
+                  </li>
+               </th:block>
+               
+               <th:block sec:authorize="hasRole('ROLE_ADMIN')">
+                  <li class="nav-item">
+                     <a th:href="@{/admin/product}" class="nav-link">Tạo Sản Phẩm</a>
+                  </li>
+               </th:block>
+            </ul>
+
+            <!-- 3. Right Actions Section (Search, Cart, Wishlist, User Profile) -->
+            <div class="d-flex align-items-center flex-column flex-lg-row mt-3 mt-lg-0" style="gap: 16px;">
+               
+               <!-- Search Form -->
+               <form class="search-container" th:action="@{/productList}" method="GET">
+                  <i class="fas fa-search search-icon-left"></i>
+                  <input class="form-control search-input" type="search" name="name" th:value="${param.name}" placeholder="Tìm kiếm sản phẩm..." aria-label="Search">
+               </form>
+               
+               <!-- Notification Bell -->
+               <a href="#" class="action-icon-btn" title="Thông báo">
+                  <i class="fas fa-bell" style="font-size: 15px;"></i>
+                  <span class="badge badge-danger badge-counter" style="background-color: #DC2626;">3</span>
+               </a>
+
+               <!-- Wishlist Icon -->
+               <a th:href="@{/wishlist}" class="action-icon-btn" id="wishlist-header-btn" title="Danh sách yêu thích">
+                  <i class="far fa-heart" id="wishlist-header-icon" style="font-size: 15px;"></i>
+                  <span class="badge badge-primary badge-counter" id="wishlist-count-badge" style="background-color: #2563EB;">0</span>
+               </a>
+               
+               <!-- Shopping Cart Badge -->
+               <a th:href="@{/shoppingCart}" class="action-icon-btn" title="Giỏ hàng" sec:authorize="!hasRole('ROLE_ADMIN')">
+                  <i class="fas fa-shopping-bag" style="font-size: 15px;"></i>
+                  <span class="badge badge-danger badge-counter" style="background-color: #DC2626;"
+                        th:text="${session.myCart != null ? session.myCart.quantityTotal : 0}">0</span>
+               </a>
+
+               <!-- User Logged In State -->
+               <th:block sec:authorize="isAuthenticated()">
+                  <!-- Vertical Divider -->
+                  <div class="d-none d-lg-block" style="width: 1px; height: 24px; background-color: #E5E7EB; flex-shrink: 0;"></div>
+                  
+                  <div class="dropdown">
+                     <a class="d-flex align-items-center gap-2 dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="text-decoration: none; gap: 9px; color: #111827;">
+                        <!-- Avatar with online dot -->
+                        <div class="user-avatar-wrapper">
+                           <img th:if="${userAvatarUrl != null and !#strings.isEmpty(userAvatarUrl)}" 
+                                th:src="${userAvatarUrl}" 
+                                referrerpolicy="no-referrer"
+                                onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+                                style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #2563EB;" 
+                                alt="Avatar" />
+                           <div th:style="${userAvatarUrl != null and !#strings.isEmpty(userAvatarUrl)} ? 'display:none;' : ''" 
+                                class="user-avatar-initials" 
+                                th:text="${userDisplayName != null ? userDisplayName.substring(0,1).toUpperCase() : #request.userPrincipal.name.substring(0,1).toUpperCase()}">A</div>
+                           <span class="user-online-dot"></span>
+                        </div>
+                        <div class="d-none d-lg-block" style="line-height: 1.2;">
+                           <div class="font-weight-bold" style="font-size: 13px; color: #111827;" th:utext="${userDisplayName != null ? userDisplayName : #request.userPrincipal.name}">Admin</div>
+                           <div style="font-size: 11px; color: #6B7280;">
+                              <span sec:authorize="hasRole('ROLE_ADMIN')">Administrator</span>
+                              <span sec:authorize="!hasRole('ROLE_ADMIN')">Customer</span>
+                           </div>
+                        </div>
+                     </a>
+                     <div class="dropdown-menu dropdown-menu-right navbar-dropdown-menu" aria-labelledby="navbarDropdown">
+                        <!-- Dropdown Header -->
+                        <div class="dropdown-header">
+                           <div class="d-flex align-items-center" style="gap: 10px;">
+                              <img th:if="${userAvatarUrl != null and !#strings.isEmpty(userAvatarUrl)}" 
+                                   th:src="${userAvatarUrl}" 
+                                   referrerpolicy="no-referrer"
+                                   onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+                                   style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" 
+                                   alt="Avatar" />
+                              <div th:style="${userAvatarUrl != null and !#strings.isEmpty(userAvatarUrl)} ? 'display:none;' : ''" 
+                                   class="user-avatar-initials" 
+                                   style="width: 36px; height: 36px; font-size: 14px;" 
+                                   th:text="${userDisplayName != null ? userDisplayName.substring(0,1).toUpperCase() : #request.userPrincipal.name.substring(0,1).toUpperCase()}">A</div>
+                              <div>
+                                 <div class="font-weight-bold" style="font-size: 13px; color: #111827;" th:utext="${userDisplayName != null ? userDisplayName : #request.userPrincipal.name}">Admin</div>
+                                 <div style="font-size: 11px; color: #6B7280;">
+                                    <span sec:authorize="hasRole('ROLE_ADMIN')">Quản trị viên</span>
+                                    <span sec:authorize="!hasRole('ROLE_ADMIN')">Khách hàng</span>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item" th:href="@{/admin/user/profile}">
+                           <span class="dd-icon" style="background-color: #F3E8FF; color: #9333EA;"><i class="fas fa-user-circle"></i></span>
+                           Hồ sơ cá nhân
+                        </a>
+                        <a class="dropdown-item" th:href="@{/admin/accountInfo}">
+                           <span class="dd-icon" style="background-color: #EFF6FF; color: #2563EB;"><i class="fas fa-tachometer-alt"></i></span>
+                           Dashboard
+                        </a>
+                        <a class="dropdown-item" th:href="@{/admin/orderList}">
+                           <span class="dd-icon" style="background-color: #ECFDF5; color: #10B981;"><i class="fas fa-list-alt"></i></span>
+                           Quản lý đơn hàng
+                        </a>
+                        <a sec:authorize="hasRole('ROLE_ADMIN')" class="dropdown-item" th:href="@{/admin/users}">
+                           <span class="dd-icon" style="background-color: #FEF3C7; color: #D97706;"><i class="fas fa-users-cog"></i></span>
+                           Quản lý người dùng
+                        </a>
+                        <a sec:authorize="hasRole('ROLE_ADMIN')" class="dropdown-item" th:href="@{/admin/accountInfo?action=voucher}">
+                           <span class="dd-icon" style="background-color: #FEE2E2; color: #DC2626;"><i class="fas fa-ticket-alt"></i></span>
+                           Quản lý Vouchers
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a class="dropdown-item text-danger" th:href="@{/admin/logout}">
+                           <span class="dd-icon" style="background-color: #FEF2F2; color: #DC2626;"><i class="fas fa-sign-out-alt"></i></span>
+                           Đăng xuất
+                        </a>
+                     </div>
+                  </div>
+               </th:block>
+
+               <!-- User Logged Out State -->
+               <th:block sec:authorize="!isAuthenticated()">
+                  <a th:href="@{/admin/login}" class="btn btn-login">Đăng Nhập</a>
+               </th:block>
+
+            </div>
+         </div>
+         
+      </div>
+   </nav>
+
+   <!-- Snackbar Notifications -->
+   <div id="snackbar-container" style="position: fixed; bottom: 24px; right: 24px; z-index: 10000; min-width: 320px; max-width: 450px;">
+      <div th:if="${message != null}" class="toast show shadow-lg border-0" role="alert" aria-live="assertive" aria-atomic="true" style="border-radius: 12px; background-color: #28a745; color: #fff; transition: opacity 0.5s; opacity: 1;">
+         <div class="d-flex align-items-center p-3">
+            <i class="fas fa-check-circle fa-lg mr-2"></i>
+            <div class="toast-body font-weight-bold" th:utext="${message}" style="flex: 1;">Success message</div>
+            <button type="button" class="close ml-2 text-white" onclick="closeSnackbar(this)" style="outline:none; text-shadow:none; opacity:0.8; font-size: 1.5rem;">
+               <span aria-hidden="true">&times;</span>
+             </button>
+         </div>
+      </div>
+      <div th:if="${errorMessage != null}" class="toast show shadow-lg border-0" role="alert" aria-live="assertive" aria-atomic="true" style="border-radius: 12px; background-color: #dc3545; color: #fff; transition: opacity 0.5s; opacity: 1;">
+         <div class="d-flex align-items-center p-3">
+            <i class="fas fa-exclamation-circle fa-lg mr-2"></i>
+            <div class="toast-body font-weight-bold" th:utext="${errorMessage}" style="flex: 1;">Error message</div>
+            <button type="button" class="close ml-2 text-white" onclick="closeSnackbar(this)" style="outline:none; text-shadow:none; opacity:0.8; font-size: 1.5rem;">
+               <span aria-hidden="true">&times;</span>
+             </button>
+         </div>
+      </div>
+   </div>
+
+   <script>
+      function closeSnackbar(btn) {
+          var toast = btn.closest('.toast');
+          if (toast) {
+              toast.style.opacity = '0';
+              setTimeout(function() { toast.remove(); }, 500);
+          }
+      }
+      // Auto hide after 4 seconds
+      window.addEventListener('DOMContentLoaded', (event) => {
+          var toasts = document.querySelectorAll('#snackbar-container .toast');
+          toasts.forEach(function(toast) {
+              setTimeout(function() {
+                  toast.style.opacity = '0';
+                  setTimeout(function() { toast.remove(); }, 500);
+              }, 4000);
+          });
+
+          // Navbar scroll shadow
+          var nav = document.getElementById('nav-main');
+          window.addEventListener('scroll', function() {
+             if (window.scrollY > 10) {
+                nav.classList.add('scrolled');
+             } else {
+                nav.classList.remove('scrolled');
+             }
+          });
+
+          // Fetch wishlist count on page load
+          fetch('/api/v1/wishlist')
+             .then(res => res.ok ? res.json() : [])
+             .then(data => {
+                if (Array.isArray(data)) {
+                   var badge = document.getElementById('wishlist-count-badge');
+                   if (badge) badge.textContent = data.length;
+                }
+             }).catch(err => {});
+       });
+
+       function updateWishlistCountBadge(count) {
+          var badge = document.getElementById('wishlist-count-badge');
+          if (badge) badge.textContent = count;
+       }
+
+       function showToastNotification(msg, type) {
+          var container = document.getElementById('snackbar-container');
+          if (!container) return;
+          var bg = (type === 'error' || type === 'danger') ? '#dc3545' : '#28a745';
+          var icon = (type === 'error' || type === 'danger') ? 'fa-exclamation-circle' : 'fa-check-circle';
+          
+          var toast = document.createElement('div');
+          toast.className = 'toast show shadow-lg border-0';
+          toast.style.cssText = 'border-radius: 12px; background-color: ' + bg + '; color: #fff; transition: opacity 0.5s; opacity: 1; margin-top: 10px;';
+          toast.innerHTML = '<div class="d-flex align-items-center p-3">' +
+                            '<i class="fas ' + icon + ' fa-lg mr-2"></i>' +
+                            '<div class="toast-body font-weight-bold" style="flex: 1;">' + msg + '</div>' +
+                            '<button type="button" class="close ml-2 text-white" onclick="closeSnackbar(this)" style="outline:none; text-shadow:none; opacity:0.8; font-size: 1.5rem;"><span aria-hidden="true">&times;</span></button>' +
+                            '</div>';
+          container.appendChild(toast);
+          setTimeout(function() {
+             toast.style.opacity = '0';
+             setTimeout(function() { toast.remove(); }, 500);
+          }, 3500);
+       }
+   </script>
+</div>
+   
+ 
+   
+   
+   
+</div>

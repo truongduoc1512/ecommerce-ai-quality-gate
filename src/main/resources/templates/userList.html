@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Quản Lý Người Dùng — ShoeShop Admin</title>
+      <link rel="stylesheet" type="text/css" th:href="@{/style.css}" />
+      <th:block th:include="_header"></th:block>
+      <style>
+         .table-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E2E8F0;
+            padding: 24px;
+         }
+         .user-table th {
+            background: #F8FAFC;
+            font-weight: 700;
+            color: #475569;
+            border-bottom: 2px solid #E2E8F0;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+         }
+         .user-avatar-sm {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+         }
+         .user-avatar-placeholder-sm {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #2563EB, #1D4ED8);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 700;
+         }
+         .badge-role {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+         }
+         .badge-admin { background: #FEF3C7; color: #D97706; }
+         .badge-user { background: #E0E7FF; color: #4338CA; }
+         .badge-active { background: #DCFCE7; color: #15803D; }
+         .badge-locked { background: #FEE2E2; color: #B91C1C; }
+         .btn-edit {
+            background: #F1F5F9;
+            color: #334155;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 13px;
+            transition: all 0.2s ease;
+         }
+         .btn-edit:hover {
+            background: #2563EB;
+            color: #ffffff;
+            text-decoration: none;
+         }
+      </style>
+   </head>
+   <body class="bg-light">
+      <th:block th:include="_menu"></th:block>
+
+      <div class="container my-5">
+         <div class="d-flex align-items-center justify-content-between mb-4">
+            <div>
+               <h2 class="font-weight-bold text-dark mb-1"><i class="fas fa-users-cog text-warning mr-2"></i> Quản Lý Người Dùng</h2>
+               <p class="text-muted mb-0">Danh sách toàn bộ tài khoản khách hàng và quản trị viên trong hệ thống.</p>
+            </div>
+         </div>
+
+         <div class="table-card">
+            <div class="table-responsive">
+               <table class="table align-middle user-table mb-0">
+                  <thead>
+                     <tr>
+                        <th>Người dùng</th>
+                        <th>Email</th>
+                        <th>Số điện thoại</th>
+                        <th>Vai trò</th>
+                        <th>Trạng thái</th>
+                        <th>Cổng đăng nhập</th>
+                        <th class="text-center">Thao tác</th>
+                     </tr>
+                  </thead>
+                  <tbody>
+                     <tr th:each="acc : ${paginationResult.list}">
+                        <td>
+                           <div class="d-flex align-items-center gap-3" style="gap: 12px;">
+                              <img th:if="${acc.avatarUrl != null and !#strings.isEmpty(acc.avatarUrl)}" 
+                                   th:src="${acc.avatarUrl}" 
+                                   referrerpolicy="no-referrer"
+                                   onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+                                   class="user-avatar-sm" 
+                                   alt="Avatar" />
+                              <div th:style="${acc.avatarUrl != null and !#strings.isEmpty(acc.avatarUrl)} ? 'display:none;' : ''" 
+                                   class="user-avatar-placeholder-sm" 
+                                   th:text="${#strings.substring(acc.fullName != null ? acc.fullName : acc.userName, 0, 1).toUpperCase()}">
+                                 A
+                              </div>
+                              <div>
+                                 <div class="font-weight-bold text-dark" th:text="${acc.fullName != null ? acc.fullName : acc.userName}">Full Name</div>
+                                 <div class="text-muted small" th:text="${'@' + acc.userName}">@username</div>
+                              </div>
+                           </div>
+                        </td>
+                        <td th:text="${acc.email != null ? acc.email : 'Chưa cập nhật'}">user@example.com</td>
+                        <td th:text="${acc.phoneNumber != null ? acc.phoneNumber : '—'}">0987654321</td>
+                        <td>
+                           <span th:if="${acc.userRole == 'ROLE_ADMIN' or acc.userRole == 'ADMIN'}" class="badge-role badge-admin">Admin</span>
+                           <span th:unless="${acc.userRole == 'ROLE_ADMIN' or acc.userRole == 'ADMIN'}" class="badge-role badge-user">Customer</span>
+                        </td>
+                        <td>
+                           <span th:if="${acc.active and acc.accountNonLocked}" class="badge-role badge-active"><i class="fas fa-check-circle mr-1"></i> Hoạt động</span>
+                           <span th:unless="${acc.active and acc.accountNonLocked}" class="badge-role badge-locked"><i class="fas fa-lock mr-1"></i> Bị khóa</span>
+                        </td>
+                        <td>
+                           <span class="badge badge-light px-2 py-1" th:text="${acc.provider}">LOCAL</span>
+                        </td>
+                        <td class="text-center">
+                           <a th:href="@{/admin/user/edit(userName=${acc.userName})}" class="btn btn-edit">
+                              <i class="fas fa-user-edit mr-1"></i> Chỉnh sửa
+                           </a>
+                        </td>
+                     </tr>
+                  </tbody>
+               </table>
+            </div>
+
+            <!-- Pagination bar -->
+            <div th:if="${paginationResult.totalPages > 1}" class="d-flex justify-content-center mt-4">
+               <ul class="pagination mb-0">
+                  <li th:each="page : ${paginationResult.navigationPages}" 
+                      th:classappend="${page == paginationResult.currentPage} ? 'active' : ''" 
+                      class="page-item">
+                     <a class="page-link" th:href="@{/admin/users(page=${page})}" th:text="${page}">1</a>
+                  </li>
+               </ul>
+            </div>
+
+         </div>
+      </div>
+
+      <th:block th:include="_footer"></th:block>
+   </body>
+</html>

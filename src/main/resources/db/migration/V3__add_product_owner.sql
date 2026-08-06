@@ -1,0 +1,1 @@
+ALTER TABLE `Products` ADD COLUMN `OWNER_USERNAME` varchar(20) DEFAULT 'manager1';

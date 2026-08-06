@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title th:text="${productInfo.name} + ' — ShoeShop'">Chi tiết sản phẩm — ShoeShop</title>
+   <link rel="stylesheet" type="text/css" th:href="@{/style.css}" />
+   <th:block th:include="_header"></th:block>
+   <style type="text/css">
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+      :root {
+         --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+         --radius-md: 12px;
+         --radius-lg: 16px;
+         --color-bg: #F8FAFC;
+         --color-card: #FFFFFF;
+         --color-primary: #2563EB;
+         --color-primary-hover: #1D4ED8;
+         --color-accent: #F59E0B;
+         --color-border: #E2E8F0;
+         --color-text: #0F172A;
+         --color-text-secondary: #475569;
+         --color-text-muted: #94A3B8;
+         --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.05);
+         --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+      }
+
+      body {
+         background-color: var(--color-bg);
+         font-family: var(--font-family);
+         color: var(--color-text);
+         margin: 0;
+         padding: 0;
+      }
+
+      .detail-container {
+         max-width: 1200px;
+         margin: 40px auto;
+         padding: 0 20px;
+      }
+
+      .product-card-hero {
+         background: var(--color-card);
+         border-radius: var(--radius-lg);
+         box-shadow: var(--shadow-lg);
+         border: 1px solid var(--color-border);
+         display: grid;
+         grid-template-columns: 1fr 1fr;
+         gap: 40px;
+         padding: 32px;
+         margin-bottom: 40px;
+      }
+
+      @media (max-width: 768px) {
+         .product-card-hero {
+            grid-template-columns: 1fr;
+         }
+      }
+
+      .product-img-wrapper {
+         position: relative;
+         background-color: #F1F5F9;
+         border-radius: var(--radius-md);
+         overflow: hidden;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         min-height: 380px;
+      }
+
+      .product-img-wrapper img {
+         max-width: 100%;
+         max-height: 380px;
+         object-fit: contain;
+         transition: transform 300ms ease;
+      }
+
+      .product-img-wrapper:hover img {
+         transform: scale(1.05);
+      }
+
+      .badge-tag {
+         position: absolute;
+         top: 16px;
+         left: 16px;
+         padding: 6px 12px;
+         border-radius: 20px;
+         font-size: 12px;
+         font-weight: 700;
+         text-transform: uppercase;
+      }
+
+      .badge-mall {
+         background-color: #DC2626;
+         color: #FFFFFF;
+      }
+
+      .badge-category {
+         position: absolute;
+         top: 16px;
+         right: 16px;
+         background-color: #EFF6FF;
+         color: var(--color-primary);
+         padding: 6px 12px;
+         border-radius: 20px;
+         font-size: 12px;
+         font-weight: 700;
+      }
+
+      .product-details {
+         display: flex;
+         flex-direction: column;
+         gap: 16px;
+      }
+
+      .product-title {
+         font-size: 26px;
+         font-weight: 800;
+         color: var(--color-text);
+         margin: 0;
+         line-height: 1.3;
+      }
+
+      .rating-cache-counter {
+         display: flex;
+         align-items: center;
+         gap: 12px;
+         background-color: #FEF3C7;
+         padding: 10px 16px;
+         border-radius: var(--radius-md);
+         width: fit-content;
+      }
+
+      .rating-score {
+         font-size: 18px;
+         font-weight: 800;
+         color: #D97706;
+      }
+
+      .stars-icon {
+         color: var(--color-accent);
+         font-size: 16px;
+      }
+
+      .review-count-badge {
+         font-size: 13px;
+         font-weight: 600;
+         color: #92400E;
+      }
+
+      .price-row {
+         display: flex;
+         align-items: baseline;
+         gap: 16px;
+         margin: 8px 0;
+      }
+
+      .current-price {
+         font-size: 28px;
+         font-weight: 800;
+         color: #EE4D2D;
+      }
+
+      .original-price {
+         font-size: 16px;
+         color: var(--color-text-muted);
+         text-decoration: line-through;
+      }
+
+      .discount-chip {
+         background-color: #FEF2F2;
+         color: #DC2626;
+         font-weight: 700;
+         font-size: 12px;
+         padding: 4px 8px;
+         border-radius: 6px;
+      }
+
+      .meta-info-grid {
+         display: grid;
+         grid-template-columns: repeat(2, 1fr);
+         gap: 12px;
+         background-color: #F8FAFC;
+         padding: 16px;
+         border-radius: var(--radius-md);
+         border: 1px solid var(--color-border);
+         font-size: 14px;
+      }
+
+      .meta-item {
+         display: flex;
+         flex-direction: column;
+         gap: 4px;
+      }
+
+      .meta-label {
+         color: var(--color-text-muted);
+         font-size: 12px;
+         font-weight: 600;
+         text-transform: uppercase;
+      }
+
+      .meta-value {
+         font-weight: 700;
+         color: var(--color-text);
+      }
+
+      .btn-buy-now {
+         display: inline-flex;
+         align-items: center;
+         justify-content: center;
+         gap: 10px;
+         padding: 16px 28px;
+         background-color: var(--color-primary);
+         color: #FFFFFF;
+         font-weight: 700;
+         font-size: 16px;
+         border-radius: var(--radius-md);
+         text-decoration: none;
+         transition: all 200ms ease;
+         box-shadow: var(--shadow-soft);
+         margin-top: 8px;
+      }
+
+      .btn-buy-now:hover {
+         background-color: var(--color-primary-hover);
+         transform: translateY(-2px);
+      }
+
+      /* Reviews Section */
+      .reviews-section {
+         background: var(--color-card);
+         border-radius: var(--radius-lg);
+         box-shadow: var(--shadow-lg);
+         border: 1px solid var(--color-border);
+         padding: 32px;
+      }
+
+      .section-title {
+         font-size: 20px;
+         font-weight: 800;
+         margin-bottom: 24px;
+         display: flex;
+         align-items: center;
+         gap: 10px;
+      }
+
+      .login-prompt-card {
+         background-color: #EFF6FF;
+         border: 1.5px dashed #93C5FD;
+         border-radius: var(--radius-md);
+         padding: 24px;
+         text-align: center;
+         margin-bottom: 32px;
+      }
+
+      .review-form-card {
+         background-color: #F8FAFC;
+         border: 1px solid var(--color-border);
+         border-radius: var(--radius-md);
+         padding: 24px;
+         margin-bottom: 32px;
+      }
+
+      .form-group {
+         margin-bottom: 16px;
+      }
+
+      .form-label {
+         display: block;
+         font-weight: 700;
+         font-size: 13px;
+         margin-bottom: 8px;
+         color: var(--color-text-secondary);
+      }
+
+      .star-rating-select {
+         display: flex;
+         gap: 10px;
+         font-size: 24px;
+         cursor: pointer;
+         color: #CBD5E1;
+      }
+
+      .star-rating-select i.active {
+         color: var(--color-accent);
+      }
+
+      .review-textarea {
+         width: 100%;
+         padding: 12px;
+         border: 1.5px solid var(--color-border);
+         border-radius: var(--radius-md);
+         font-family: var(--font-family);
+         font-size: 14px;
+         outline: none;
+         resize: vertical;
+         min-height: 90px;
+      }
+
+      .review-textarea:focus {
+         border-color: var(--color-primary);
+         box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+      }
+
+      .btn-submit-review {
+         background-color: var(--color-primary);
+         color: white;
+         font-weight: 700;
+         padding: 10px 20px;
+         border: none;
+         border-radius: var(--radius-md);
+         cursor: pointer;
+         transition: all 200ms ease;
+      }
+
+      .btn-submit-review:hover {
+         background-color: var(--color-primary-hover);
+      }
+
+      /* Reviews Feed */
+      .reviews-list {
+         display: flex;
+         flex-direction: column;
+         gap: 20px;
+      }
+
+      .review-item {
+         border-bottom: 1px solid var(--color-border);
+         padding-bottom: 20px;
+      }
+
+      .review-item:last-child {
+         border-bottom: none;
+      }
+
+      .review-user-row {
+         display: flex;
+         align-items: center;
+         justify-content: space-between;
+         margin-bottom: 8px;
+      }
+
+      .user-avatar-info {
+         display: flex;
+         align-items: center;
+         gap: 10px;
+      }
+
+      .avatar-circle {
+         width: 40px;
+         height: 40px;
+         border-radius: 50%;
+         background-color: #DBEAFE;
+         color: var(--color-primary);
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         font-weight: 800;
+      }
+
+      .review-author {
+         font-weight: 700;
+         font-size: 14px;
+      }
+
+      .review-date {
+         font-size: 12px;
+         color: var(--color-text-muted);
+      }
+
+      .review-actions-group {
+         display: flex;
+         align-items: center;
+         gap: 10px;
+      }
+
+      .btn-action-sm {
+         padding: 4px 10px;
+         font-size: 12px;
+         font-weight: 700;
+         border-radius: 6px;
+         cursor: pointer;
+         border: none;
+         transition: var(--transition);
+      }
+
+      .btn-action-edit {
+         background-color: #FEF3C7;
+         color: #D97706;
+      }
+
+      .btn-action-edit:hover {
+         background-color: #FDE68A;
+      }
+
+      .btn-action-delete {
+         background-color: #FEF2F2;
+         color: #DC2626;
+      }
+
+      .btn-action-delete:hover {
+         background-color: #FECACA;
+      }
+
+      .badge-time-expired {
+         font-size: 11px;
+         color: #94A3B8;
+         background-color: #F1F5F9;
+         padding: 4px 8px;
+         border-radius: 6px;
+      }
+
+      .review-comment {
+         font-size: 14px;
+         color: var(--color-text-secondary);
+         line-height: 1.6;
+         margin-top: 6px;
+      }
+
+      .edit-form-box {
+         display: none;
+         background-color: #F8FAFC;
+         border: 1px solid var(--color-border);
+         border-radius: var(--radius-md);
+         padding: 16px;
+         margin-top: 12px;
+      }
+   </style>
+</head>
+
+<body>
+   <th:block th:include="_menu"></th:block>
+
+   <div class="detail-container">
+      <!-- Hero Product Details Card -->
+      <div class="product-card-hero">
+         <div class="product-img-wrapper">
+            <span th:if="${productInfo.isMall}" class="badge-tag badge-mall">ShopeeMall</span>
+            <span class="badge-category" th:text="${productInfo.category}">Sneaker</span>
+            <img th:src="@{|/productImage?code=${productInfo.code}|}" th:alt="${productInfo.name}" />
+         </div>
+
+         <div class="product-details">
+            <h1 class="product-title" th:text="${productInfo.name}">Tên sản phẩm</h1>
+
+            <!-- Denormalized Cache Counter Indicator -->
+            <div class="rating-cache-counter">
+               <span class="rating-score" th:text="${#numbers.formatDecimal(productInfo.rating, 1, 1)}">4.8</span>
+               <div class="stars-icon">
+                  <i class="fas fa-star"></i>
+               </div>
+               <span class="review-count-badge" th:text="${productInfo.reviewCount} + ' Đánh giá (Cache Counter)'">152
+                  Đánh giá</span>
+            </div>
+
+            <!-- Price -->
+            <div class="price-row">
+               <span class="current-price"
+                  th:text="${#numbers.formatDecimal(productInfo.price, 0, 'COMMA', 0, 'POINT')} + ' ₫'">1,200,000
+                  ₫</span>
+               <span th:if="${productInfo.discountPercent > 0}" class="original-price"
+                  th:text="${#numbers.formatDecimal(productInfo.originalPrice, 0, 'COMMA', 0, 'POINT')} + ' ₫'">1,500,000
+                  ₫</span>
+               <span th:if="${productInfo.discountPercent > 0}" class="discount-chip"
+                  th:text="'-' + ${productInfo.discountPercent} + '%'">-20%</span>
+            </div>
+
+            <!-- Meta Info -->
+            <div class="meta-info-grid">
+               <div class="meta-item">
+                  <span class="meta-label">Thương hiệu</span>
+                  <span class="meta-value" th:text="${productInfo.brand}">Adidas</span>
+               </div>
+               <div class="meta-item">
+                  <span class="meta-label">Tồn kho</span>
+                  <span class="meta-value" th:style="${productInfo.stockQuantity > 0 ? 'color: #059669;' : 'color: #DC2626;'}"
+                     th:text="${productInfo.stockQuantity > 0 ? productInfo.stockQuantity + ' sản phẩm sẵn có' : 'Hết hàng (0)'}">100 sẵn có</span>
+               </div>
+               <div class="meta-item">
+                  <span class="meta-label">Đã bán</span>
+                  <span class="meta-value"
+                     th:text="${#numbers.formatDecimal(productInfo.salesCount, 0, 'COMMA', 0, 'POINT')}">1,250</span>
+               </div>
+               <div class="meta-item">
+                  <span class="meta-label">Xuất xứ</span>
+                  <span class="meta-value" th:text="${productInfo.location}">Hồ Chí Minh</span>
+               </div>
+            </div>
+
+            <!-- Add to cart & Wishlist (Customers / Users only) -->
+            <th:block sec:authorize="!hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN')">
+               <div style="display: flex; gap: 12px; align-items: center;">
+                  <a th:if="${productInfo.stockQuantity > 0}" th:href="@{|/buyProduct?code=${productInfo.code}|}" class="btn-buy-now" style="flex: 1;">
+                     <i class="fas fa-cart-plus"></i> Thêm vào Giỏ Hàng
+                  </a>
+                  <button th:if="${productInfo.stockQuantity <= 0}" disabled class="btn-buy-now" style="flex: 1; background-color: #94A3B8; cursor: not-allowed; opacity: 0.8; border: none;">
+                     <i class="fas fa-times-circle"></i> Sản Phẩm Hết Hàng
+                  </button>
+                  <button type="button" class="btn-wishlist-detail" th:data-code="${productInfo.code}" onclick="toggleWishlistDetail(this)" style="padding: 12px 20px; border-radius: var(--radius-md); border: 2px solid #E2E8F0; background: #fff; cursor: pointer; font-size: 15px; font-weight: 700; color: #64748B; transition: all 0.2s; display: inline-flex; align-items: center;">
+                     <i class="far fa-heart" id="detail-wishlist-icon" style="font-size: 18px; margin-right: 6px;"></i> <span id="detail-wishlist-text">Yêu thích</span>
+                  </button>
+               </div>
+            </th:block>
+
+            <!-- Notice for Manager / Admin -->
+            <th:block sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN')">
+               <div class="p-3 text-center rounded-lg"
+                  style="background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; font-weight: 700; font-size: 14px; border-radius: 12px;">
+                  <i class="fas fa-user-shield mr-1"></i> Chế độ xem dành cho Manager / Admin
+               </div>
+            </th:block>
+         </div>
+      </div>
+
+      <!-- Reviews Section -->
+      <div class="reviews-section">
+         <h2 class="section-title">
+            <i class="fas fa-star" style="color: var(--color-accent);"></i>
+            Đánh giá & Nhận xét từ khách hàng
+         </h2>
+
+         <div th:if="${reviewMessage != null}"
+            style="background:#ECFDF5; border:1px solid #A7F3D0; color:#047857; padding:12px 16px; border-radius:12px; font-weight:600; margin-bottom:20px;">
+            <i class="fas fa-check-circle"></i> <span th:text="${reviewMessage}"></span>
+         </div>
+
+         <div th:if="${errorMessage != null}"
+            style="background:#FEF2F2; border:1px solid #FECACA; color:#DC2626; padding:12px 16px; border-radius:12px; font-weight:600; margin-bottom:20px;">
+            <i class="fas fa-exclamation-circle"></i> <span th:text="${errorMessage}"></span>
+         </div>
+
+         <!-- Login prompt if unauthenticated -->
+         <div th:if="${#authentication == null || #authentication.name == 'anonymousUser'}" class="login-prompt-card">
+            <i class="fas fa-user-lock" style="font-size:28px; color:var(--color-primary); margin-bottom:10px;"></i>
+            <h4 style="margin:0 0 8px 0; font-weight:800;">Bạn cần đăng nhập để đánh giá sản phẩm</h4>
+            <p style="color:var(--color-text-secondary); margin:0 0 16px 0; font-size:14px;">Vui lòng đăng nhập tài
+               khoản ShoeShop để chia sẻ trải nghiệm sản phẩm của bạn.</p>
+            <a th:href="@{/admin/login}" class="btn-submit-review" style="text-decoration:none; display:inline-block;">
+               Đăng nhập ngay <i class="fas fa-arrow-right"></i>
+            </a>
+         </div>
+
+         <!-- Add Review Form (Only visible when authenticated and NOT Manager / Admin) -->
+         <th:block sec:authorize="!hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN')">
+            <div th:if="${#authentication != null && #authentication.name != 'anonymousUser'}" class="review-form-card">
+               <h3 style="margin-top:0; font-size:16px; font-weight:700;">Gửi đánh giá của bạn (Tài khoản: <span
+                     style="color:var(--color-primary);" th:text="${#authentication.name}">User</span>)</h3>
+               <form th:action="@{/product/review}" th:object="${productReviewForm}" method="POST">
+                  <input type="hidden" th:field="*{productCode}" />
+                  <input type="hidden" id="ratingValueInput" th:field="*{ratingValue}" value="5" />
+
+                  <div class="form-group">
+                     <label class="form-label">Chọn số sao đánh giá</label>
+                     <div class="star-rating-select" id="starRatingSelect">
+                        <i class="fas fa-star active" data-rating="1"></i>
+                        <i class="fas fa-star active" data-rating="2"></i>
+                        <i class="fas fa-star active" data-rating="3"></i>
+                        <i class="fas fa-star active" data-rating="4"></i>
+                        <i class="fas fa-star active" data-rating="5"></i>
+                     </div>
+                  </div>
+
+                  <div class="form-group">
+                     <label class="form-label">Nội dung nhận xét</label>
+                     <textarea th:field="*{comment}" class="review-textarea"
+                        placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này..." required></textarea>
+                  </div>
+
+                  <button type="submit" class="btn-submit-review">
+                     Gửi Đánh Giá <i class="fas fa-paper-plane"></i>
+                  </button>
+               </form>
+            </div>
+         </th:block>
+
+         <!-- Info box for Manager / Admin -->
+         <th:block sec:authorize="hasAnyRole('ROLE_MANAGER', 'ROLE_ADMIN')">
+            <div
+               style="background:#F8FAFC; border:1px solid #E2E8F0; padding:14px 18px; border-radius:12px; font-size:13.5px; color:#64748B; font-weight:600; margin-bottom:20px;">
+               <i class="fas fa-info-circle text-primary mr-1"></i> Tài khoản Quản lý (Manager/Admin) có thể xem tất cả
+               đánh giá & nhận xét từ khách hàng.
+            </div>
+         </th:block>
+
+         <!-- Existing Reviews List -->
+         <div class="reviews-list">
+            <div th:if="${#lists.isEmpty(reviewsList)}"
+               style="text-align:center; color:var(--color-text-muted); padding:30px 0;">
+               Chưa có nhận xét nào cho sản phẩm này. Hãy là người đầu tiên đánh giá!
+            </div>
+
+            <div th:each="rev : ${reviewsList}" class="review-item">
+               <div class="review-user-row">
+                  <div class="user-avatar-info">
+                     <div class="avatar-circle" th:text="${#strings.substring(rev.username, 0, 1).toUpperCase()}">U
+                     </div>
+                     <div>
+                        <div class="review-author" th:text="${rev.username}">Nguyễn Văn A</div>
+                        <div class="stars-icon">
+                           <i th:each="i : ${#numbers.sequence(1, rev.ratingValue)}" class="fas fa-star"></i>
+                        </div>
+                     </div>
+                  </div>
+
+                  <div class="review-actions-group">
+                     <span class="review-date"
+                        th:text="${#dates.format(rev.createdAt, 'dd/MM/yyyy HH:mm')}">28/07/2026</span>
+
+                     <!-- Actions for Author -->
+                     <th:block th:if="${#authentication != null && #authentication.name == rev.username}">
+                        <!-- Check 5 minutes (300,000 ms) edit window -->
+                        <th:block th:with="diff=${#dates.createNow().getTime() - rev.createdAt.getTime()}">
+                           <button th:if="${diff <= 300000}" type="button" class="btn-action-sm btn-action-edit"
+                              th:onclick="'toggleEditBox(' + ${rev.reviewId} + ')'">
+                              <i class="fas fa-edit"></i> Sửa (Còn <span
+                                 th:text="${#numbers.formatDecimal((300000 - diff)/60000.0, 1, 0)}">5</span>p)
+                           </button>
+                           <span th:if="${diff > 300000}" class="badge-time-expired">
+                              <i class="fas fa-lock"></i> Quá 5p
+                           </span>
+                        </th:block>
+
+                        <!-- Delete Button -->
+                        <form th:action="@{/product/review/delete}" method="POST" style="display:inline;"
+                           onsubmit="return confirm('Bạn có chắc chắn muốn xóa đánh giá này?');">
+                           <input type="hidden" name="reviewId" th:value="${rev.reviewId}" />
+                           <input type="hidden" name="productCode" th:value="${productInfo.code}" />
+                           <button type="submit" class="btn-action-sm btn-action-delete">
+                              <i class="fas fa-trash-alt"></i> Xóa
+                           </button>
+                        </form>
+                     </th:block>
+                  </div>
+               </div>
+
+               <div class="review-comment" th:id="'commentText-' + ${rev.reviewId}" th:text="${rev.comment}">Sản phẩm
+                  rất mượt, đi êm chân!</div>
+
+               <!-- Inline Edit Form (Hidden by default) -->
+               <div class="edit-form-box" th:id="'editBox-' + ${rev.reviewId}">
+                  <form th:action="@{/product/review/edit}" method="POST">
+                     <input type="hidden" name="reviewId" th:value="${rev.reviewId}" />
+                     <input type="hidden" name="productCode" th:value="${productInfo.code}" />
+                     <div class="form-group">
+                        <label class="form-label">Cập nhật số sao (1-5)</label>
+                        <select name="ratingValue" class="form-control" style="width:120px; font-weight:700;">
+                           <option value="5" th:selected="${rev.ratingValue == 5}">⭐⭐⭐⭐⭐ 5 sao</option>
+                           <option value="4" th:selected="${rev.ratingValue == 4}">⭐⭐⭐⭐ 4 sao</option>
+                           <option value="3" th:selected="${rev.ratingValue == 3}">⭐⭐⭐ 3 sao</option>
+                           <option value="2" th:selected="${rev.ratingValue == 2}">⭐⭐ 2 sao</option>
+                           <option value="1" th:selected="${rev.ratingValue == 1}">⭐ 1 sao</option>
+                        </select>
+                     </div>
+                     <div class="form-group">
+                        <label class="form-label">Nội dung nhận xét mới</label>
+                        <textarea name="comment" class="review-textarea" required th:text="${rev.comment}"></textarea>
+                     </div>
+                     <div style="display:flex; gap:10px;">
+                        <button type="submit" class="btn-submit-review" style="padding:8px 16px; font-size:13px;">Lưu
+                           thay đổi</button>
+                        <button type="button" class="btn-action-sm" style="background:#E2E8F0; color:#475569;"
+                           th:onclick="'toggleEditBox(' + ${rev.reviewId} + ')'">Hủy</button>
+                     </div>
+                  </form>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+
+   <th:block th:include="_footer"></th:block>
+
+   <script>
+      // Interactive Star Rating Selector Script
+      const stars = document.querySelectorAll('#starRatingSelect i');
+      const ratingInput = document.getElementById('ratingValueInput');
+
+      if (stars && ratingInput) {
+         stars.forEach(star => {
+            star.addEventListener('click', function () {
+               const val = parseInt(this.getAttribute('data-rating'));
+               ratingInput.value = val;
+               stars.forEach((s, idx) => {
+                  if (idx < val) {
+                     s.classList.add('active');
+                  } else {
+                     s.classList.remove('active');
+                  }
+               });
+            });
+         });
+      }
+
+      function toggleEditBox(reviewId) {
+         const editBox = document.getElementById('editBox-' + reviewId);
+         if (editBox) {
+            if (editBox.style.display === 'block') {
+               editBox.style.display = 'none';
+            } else {
+               editBox.style.display = 'block';
+            }
+         }
+      }
+
+      function toggleWishlistDetail(btn) {
+         var code = btn.getAttribute('data-code');
+         if (!code) return;
+         var icon = document.getElementById('detail-wishlist-icon');
+         var text = document.getElementById('detail-wishlist-text');
+         var isFav = icon.classList.contains('fas');
+         var method = isFav ? 'DELETE' : 'POST';
+
+         btn.disabled = true;
+         fetch('/api/v1/wishlist/' + code, { method: method })
+            .then(res => {
+               if (res.status === 401) {
+                  window.location.href = '/admin/login';
+                  return null;
+               }
+               return res.json();
+            })
+            .then(data => {
+               btn.disabled = false;
+               if (data && data.success) {
+                  if (isFav) {
+                     icon.className = 'far fa-heart';
+                     icon.style.color = '#64748B';
+                     text.textContent = 'Yêu thích';
+                     btn.style.borderColor = '#E2E8F0';
+                     btn.style.color = '#64748B';
+                     if (typeof showToastNotification === 'function') {
+                        showToastNotification('Đã xóa sản phẩm khỏi danh sách yêu thích!', 'success');
+                     }
+                  } else {
+                     icon.className = 'fas fa-heart';
+                     icon.style.color = '#EF4444';
+                     text.textContent = 'Đã thích';
+                     btn.style.borderColor = '#FCA5A5';
+                     btn.style.color = '#EF4444';
+                     if (typeof showToastNotification === 'function') {
+                        showToastNotification('Đã thêm sản phẩm vào danh sách yêu thích!', 'success');
+                     }
+                  }
+                  if (data.wishlistCount !== undefined && typeof updateWishlistCountBadge === 'function') {
+                     updateWishlistCountBadge(data.wishlistCount);
+                  }
+               }
+            }).catch(err => { btn.disabled = false; });
+      }
+
+      window.addEventListener('DOMContentLoaded', () => {
+         var btn = document.querySelector('.btn-wishlist-detail');
+         if (btn) {
+            var code = btn.getAttribute('data-code');
+            fetch('/api/v1/wishlist/check/' + code)
+               .then(res => res.ok ? res.json() : null)
+               .then(data => {
+                  if (data && data.favorite) {
+                     var icon = document.getElementById('detail-wishlist-icon');
+                     var text = document.getElementById('detail-wishlist-text');
+                     if (icon) {
+                        icon.className = 'fas fa-heart';
+                        icon.style.color = '#EF4444';
+                     }
+                     if (text) text.textContent = 'Đã thích';
+                     btn.style.borderColor = '#FCA5A5';
+                     btn.style.color = '#EF4444';
+                  }
+               }).catch(err => {});
+         }
+      });
+   </script>
+</body>
+
+</html>

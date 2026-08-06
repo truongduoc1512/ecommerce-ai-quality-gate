@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>ShoeShop — Xác nhận đơn hàng</title>
+      <link rel="stylesheet" type="text/css" th:href="@{/style.css}" />
+      <th:block th:include="_header"></th:block>
+      
+      <!-- Scoped styling for Confirmation page -->
+      <style>
+         :root {
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            
+            --color-bg:             #F8FAFC;
+            --color-card:           #FFFFFF;
+            --color-primary:        #2563EB;
+            --color-primary-hover:  #1D4ED8;
+            --color-border:         #E5E7EB;
+            --color-text:           #111827;
+            --color-text-secondary: #4B5563;
+            --color-text-muted:     #9CA3AF;
+            --color-success:        #16A34A;
+            --color-success-light:  #ECFDF5;
+            
+            --shadow-soft: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md:   0 4px 16px rgba(0,0,0,0.06);
+            --transition:  200ms ease-in-out;
+         }
+
+         body {
+            background-color: var(--color-bg);
+            font-family: var(--font-family);
+         }
+
+         .checkout-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding-left: 16px;
+            padding-right: 16px;
+         }
+
+         /* Checkout progress steps tracker */
+         .checkout-steps {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            position: relative;
+            max-width: 680px;
+            margin-left: auto;
+            margin-right: auto;
+         }
+         .checkout-steps::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--color-border);
+            z-index: 1;
+         }
+         .step-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            z-index: 2;
+            text-decoration: none !important;
+         }
+         .step-badge {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #E5E7EB;
+            color: #6B7280;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #E5E7EB;
+            transition: all var(--transition);
+         }
+         .step-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6B7280;
+            margin-top: 8px;
+            transition: all var(--transition);
+         }
+         
+         /* Active & completed states */
+         .step-item.completed .step-badge {
+            background-color: #ECFDF5;
+            border-color: #10B981;
+            color: #10B981;
+         }
+         .step-item.completed .step-label {
+            color: #10B981;
+         }
+         .step-item.active .step-badge {
+            background-color: var(--color-primary);
+            border-color: var(--color-primary);
+            color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+         }
+         .step-item.active .step-label {
+            color: var(--color-primary);
+            font-weight: 700;
+         }
+
+         /* Grid Layout */
+         .confirm-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 24px;
+            align-items: start;
+         }
+
+         .confirm-card {
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            padding: 28px;
+            margin-bottom: 24px;
+            transition: box-shadow var(--transition);
+         }
+         .confirm-card:hover {
+            box-shadow: var(--shadow-md);
+         }
+
+         .card-sec-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 18px;
+            letter-spacing: -0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 12px;
+         }
+
+         /* Info list layout */
+         .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+         }
+         .info-item {
+            display: flex;
+            align-items: flex-start;
+            font-size: 13.5px;
+            line-height: 1.5;
+         }
+         .info-label {
+            width: 110px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            flex-shrink: 0;
+            text-align: left;
+         }
+         .info-value {
+            color: var(--color-text);
+            font-weight: 500;
+            text-align: left;
+         }
+
+         /* Product line list */
+         .product-line-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px dashed var(--color-border);
+         }
+         .product-line-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+         }
+         .product-line-item:first-child {
+            padding-top: 0;
+         }
+         
+         .prod-img-container {
+            width: 64px;
+            height: 64px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--color-border);
+            overflow: hidden;
+            flex-shrink: 0;
+            margin-right: 16px;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+         }
+         .prod-img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+         }
+
+         .prod-details {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            text-align: left;
+         }
+         .prod-name {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin: 0;
+         }
+         .prod-code {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+         }
+         .prod-qty {
+            font-size: 12.5px;
+            color: var(--color-text-secondary);
+            margin-top: 4px;
+         }
+
+         .prod-price-block {
+            text-align: right;
+            flex-shrink: 0;
+            margin-left: 16px;
+         }
+         .prod-subtotal {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin: 0;
+         }
+         .prod-unit-price {
+            font-size: 11px;
+            color: var(--color-text-secondary);
+            margin-top: 2px;
+         }
+
+         /* Order Summary Card sticky */
+         .summary-sticky {
+            position: sticky;
+            top: 24px;
+         }
+         
+         .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13.5px;
+            margin-bottom: 12px;
+            color: var(--color-text-secondary);
+         }
+         .summary-row.total-row {
+            border-top: 1px solid var(--color-border);
+            margin-top: 16px;
+            padding-top: 16px;
+            color: var(--color-text);
+         }
+         .total-label {
+            font-weight: 700;
+            font-size: 15px;
+         }
+         .total-price {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--color-primary);
+         }
+
+         /* Buttons */
+         .btn-submit-order {
+            background-color: var(--color-primary) !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 10px !important;
+            font-size: 14.5px !important;
+            font-weight: 700 !important;
+            height: 48px !important;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+            transition: transform var(--transition), background-color var(--transition) !important;
+            margin-top: 20px;
+         }
+         .btn-submit-order:hover {
+            background-color: var(--color-primary-hover) !important;
+            transform: translateY(-1px);
+         }
+         .btn-submit-order:active {
+            transform: scale(0.98);
+         }
+
+         .btn-edit-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            text-decoration: none !important;
+            transition: color var(--transition), transform var(--transition);
+         }
+         .btn-edit-link:hover {
+            color: var(--color-primary);
+         }
+         
+         .edit-links-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            border-top: 1px solid var(--color-border);
+            padding-top: 16px;
+         }
+
+         @media (max-width: 768px) {
+            .confirm-grid {
+               grid-template-columns: 1fr;
+            }
+         }
+      </style>
+   </head>
+   <body>
+      
+      <th:block th:include="_menu"></th:block>
+       
+      <div class="checkout-container">
+         <!-- Steps breadcrumbs tracker -->
+         <div class="checkout-steps">
+            <a th:href="@{/shoppingCart}" class="step-item completed">
+               <span class="step-badge"><i class="fas fa-check"></i></span>
+               <span class="step-label">Giỏ hàng</span>
+            </a>
+            <a th:href="@{/shoppingCartCustomer}" class="step-item completed">
+               <span class="step-badge"><i class="fas fa-check"></i></span>
+               <span class="step-label">Thông tin giao hàng</span>
+            </a>
+            <div class="step-item active">
+               <span class="step-badge">3</span>
+               <span class="step-label">Xác nhận đơn</span>
+            </div>
+         </div>
+
+         <!-- Grid details -->
+         <div class="confirm-grid">
+            
+            <!-- Left Side: Cards -->
+            <div class="confirm-left">
+               
+               <!-- Customer Info Card -->
+               <div class="confirm-card">
+                  <h5 class="card-sec-title"><i class="fas fa-user-circle text-primary"></i> Thông tin nhận hàng</h5>
+                  <ul class="info-list">
+                     <li class="info-item">
+                        <span class="info-label">Người nhận:</span>
+                        <span class="info-value" th:utext="${myCart.customerInfo.name}">Trương Hoài Được</span>
+                     </li>
+                     <li class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value" th:utext="${myCart.customerInfo.email}">hoaiduoc15@gmail.com</span>
+                     </li>
+                     <li class="info-item">
+                        <span class="info-label">Số điện thoại:</span>
+                        <span class="info-value" th:utext="${myCart.customerInfo.phone}">0949096416</span>
+                     </li>
+                     <li class="info-item">
+                        <span class="info-label">Địa chỉ nhận:</span>
+                        <span class="info-value" th:utext="${myCart.customerInfo.address}">123 abc</span>
+                     </li>
+                  </ul>
+               </div>
+
+               <!-- Cart Items Card -->
+               <div class="confirm-card">
+                  <h5 class="card-sec-title"><i class="fas fa-shopping-bag text-primary"></i> Danh sách sản phẩm</h5>
+                  
+                  <div class="product-preview-container">
+                     <!-- Loop line item -->
+                     <div class="product-line-item" th:each="cartLineInfo : ${myCart.cartLines}">
+                        <div class="prod-img-container">
+                           <img class="prod-img" th:src="@{|/productImage?code=${cartLineInfo.productInfo.code}|}" />
+                        </div>
+                        <div class="prod-details">
+                           <h6 class="prod-name" th:utext="${cartLineInfo.productInfo.name}">Product Name</h6>
+                           <span class="prod-code" th:utext="'Mã: ' + ${cartLineInfo.productInfo.code}">Mã: S-013</span>
+                           <input type="hidden" name="code" th:value="${cartLineInfo.productInfo.code}" />
+                           <span class="prod-qty" th:utext="'Số lượng: ' + ${cartLineInfo.quantity}">Số lượng: 1</span>
+                        </div>
+                        <div class="prod-price-block">
+                            <p class="prod-subtotal" th:utext="${#numbers.formatDecimal(cartLineInfo.amount * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</p>
+                            <span class="prod-unit-price" th:utext="'Đơn giá: ' + ${#numbers.formatDecimal(cartLineInfo.productInfo.price * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">Đơn giá: 0 ₫</span>
+                        </div>
+                     </div>
+                  </div>
+               </div>
+
+            </div>
+
+            <!-- Right Side: Sticky Checkout Summary -->
+            <div class="confirm-right summary-sticky">
+               <div class="confirm-card">
+                  <h5 class="card-sec-title"><i class="fas fa-file-invoice-dollar text-primary"></i> Tóm tắt đơn hàng</h5>
+                  
+                  <div class="summary-row">
+                     <span>Tạm tính sản phẩm:</span>
+                     <span class="font-weight-bold text-dark" th:utext="${#numbers.formatDecimal(myCart.amountTotal * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                  </div>
+                  <div class="summary-row">
+                     <span>Phí vận chuyển:</span>
+                     <span class="text-success font-weight-bold">Miễn phí</span>
+                  </div>
+                  <div th:if="${myCart.voucherCode != null}" class="summary-row">
+                     <span>Voucher (<strong th:text="${myCart.voucherCode}">WELCOME50</strong>):</span>
+                     <span class="text-success font-weight-bold" th:utext="'- ' + ${#numbers.formatDecimal(myCart.discountAmount * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                  </div>
+                  
+                  <div class="summary-row total-row">
+                     <span class="total-label">Tổng thanh toán:</span>
+                      <span class="total-price" th:utext="${#numbers.formatDecimal(myCart.finalAmount * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                  </div>
+
+                  <!-- Checkout form action -->
+                  <form method="POST" th:action="@{/shoppingCartConfirmation}">
+                     <button type="submit" class="btn-submit-order">
+                        <i class="fas fa-check-circle mr-1"></i> Xác nhận đặt hàng
+                     </button>
+                  </form>
+
+                  <!-- Link adjustments -->
+                  <div class="edit-links-row">
+                     <a class="btn-edit-link" th:href="@{/shoppingCart}">
+                        <i class="fas fa-arrow-left"></i> Sửa giỏ hàng
+                     </a>
+                     <a class="btn-edit-link" th:href="@{/shoppingCartCustomer}">
+                        <i class="fas fa-user-edit"></i> Sửa thông tin nhận
+                     </a>
+                  </div>
+
+               </div>
+            </div>
+
+         </div>
+      </div> 
+      
+      <th:block th:include="_footer"></th:block>
+       
+   </body>
+</html>

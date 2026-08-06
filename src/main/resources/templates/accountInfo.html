@@ -1,0 +1,1721 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="description" content="ShoeShop Admin Dashboard - Quản lý doanh thu, đơn hàng và sản phẩm.">
+      <title>ShoeShop — Admin Dashboard</title>
+      <link rel="stylesheet" type="text/css" th:href="@{/style.css}" />
+      <th:block th:include="_header"></th:block>
+      <style>
+      /* ================================================================
+         SHOESHOP ADMIN DASHBOARD — Design System
+         Organized sections:
+           1. Design Tokens (:root)
+           2. Base & Body
+           3. Layout
+           4. Dashboard Card
+           5. Hero Section
+           6. KPI Cards
+           7. Revenue Chart
+           8. Recent Orders Table
+           9. Quick Action Cards
+          10. Activity Timeline
+          11. AI Status Card
+          12. Skeleton Loading
+          13. Empty States
+          14. UX Polish (hover, focus, transitions)
+          15. Responsive Breakpoints
+      ================================================================ */
+
+      /* ----------------------------------------------------------
+         1. Design Tokens
+      ---------------------------------------------------------- */
+      :root {
+         /* Typography */
+         --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+         --font-size-xs:   11px;
+         --font-size-sm:   12.5px;
+         --font-size-base: 14px;
+         --font-size-md:   16px;
+         --font-size-lg:   20px;
+         --font-size-xl:   22px;
+         --line-height:    1.5;
+
+         /* Spacing (8px grid) */
+         --sp-1: 8px;
+         --sp-2: 16px;
+         --sp-3: 24px;
+         --sp-4: 32px;
+
+         /* Border Radius */
+         --radius-sm: 8px;
+         --radius-md: 12px;
+         --radius-lg: 16px;
+
+         /* Colors */
+         --color-bg:             #F8FAFC;
+         --color-card:           #FFFFFF;
+         --color-primary:        #2563EB;
+         --color-primary-hover:  #1D4ED8;
+         --color-primary-light:  #EFF6FF;
+         --color-success:        #16A34A;
+         --color-success-light:  #ECFDF5;
+         --color-danger:         #DC2626;
+         --color-danger-light:   #FEF2F2;
+         --color-warning:        #F59E0B;
+         --color-warning-light:  #FEF3C7;
+         --color-border:         #E5E7EB;
+         --color-text:           #111827;
+         --color-text-secondary: #6B7280;
+         --color-text-muted:     #9CA3AF;
+
+         /* Shadows */
+         --shadow-soft:   0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+         --shadow-md:     0 4px 16px rgba(0,0,0,0.06);
+         --shadow-lg:     0 12px 32px rgba(37,99,235,0.07), 0 2px 8px rgba(0,0,0,0.04);
+
+         /* Transitions */
+         --transition: 200ms ease-in-out;
+
+         /* Hero */
+         --hero-gradient: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+         --hero-min-height: 200px;
+      }
+
+      /* ----------------------------------------------------------
+         2. Base & Body
+      ---------------------------------------------------------- */
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+         background-color: var(--color-bg);
+         font-family: var(--font-family);
+         font-size: var(--font-size-base);
+         line-height: var(--line-height);
+         color: var(--color-text);
+      }
+
+      /* Accessible focus ring — keyboard only */
+      :focus-visible {
+         outline: 2px solid var(--color-primary);
+         outline-offset: 3px;
+         border-radius: 6px;
+      }
+      :focus:not(:focus-visible) { outline: none; }
+
+      /* ----------------------------------------------------------
+         3. Layout
+      ---------------------------------------------------------- */
+      .dash-container {
+         max-width: 1200px;
+         margin-left: auto;
+         margin-right: auto;
+         padding-left: var(--sp-2);
+         padding-right: var(--sp-2);
+      }
+
+      /* ----------------------------------------------------------
+         4. Dashboard Card  (single canonical definition)
+      ---------------------------------------------------------- */
+      .dashboard-card {
+         background: var(--color-card);
+         border: 1px solid var(--color-border);
+         border-radius: var(--radius-lg);
+         box-shadow: var(--shadow-soft);
+         overflow: hidden;
+         transition:
+            transform       var(--transition),
+            box-shadow      var(--transition),
+            border-color    var(--transition);
+      }
+      .dashboard-card:hover {
+         transform:    translateY(-3px);
+         box-shadow:   var(--shadow-lg);
+         border-color: rgba(37, 99, 235, 0.15);
+      }
+      /* Suppress lift on data-heavy cards (table / timeline) */
+      .dashboard-card:has(table):hover,
+      .dashboard-card:has(.timeline):hover {
+         transform: none;
+         box-shadow: var(--shadow-md);
+      }
+
+      /* Shared section heading inside any card */
+      .card-title {
+         font-size: var(--font-size-md);
+         font-weight: 700;
+         color: var(--color-text);
+         letter-spacing: -0.3px;
+         margin-bottom: 0;
+      }
+      .card-subtitle {
+         font-size: var(--font-size-sm);
+         color: var(--color-text-secondary);
+      }
+
+      /* ----------------------------------------------------------
+         5. Hero Section
+      ---------------------------------------------------------- */
+      .hero-section {
+         min-height: var(--hero-min-height);
+         border-radius: var(--radius-lg);
+         background: var(--hero-gradient);
+         overflow: hidden;
+         box-shadow: var(--shadow-soft);
+         padding: var(--sp-3);
+         color: #fff;
+         position: relative;
+         display: flex;
+         flex-direction: column;
+         justify-content: space-between;
+      }
+
+      .hero-avatar {
+         width: 72px;
+         height: 72px;
+         background-color: #fff;
+         border-radius: 50%;
+         font-size: 28px;
+         border: 4px solid rgba(255,255,255,0.25);
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         font-weight: 700;
+         color: var(--color-primary);
+         flex-shrink: 0;
+         transition: transform var(--transition);
+      }
+      .hero-section:hover .hero-avatar {
+         transform: scale(1.04);
+      }
+
+      .hero-btn {
+         border-radius: var(--radius-sm) !important;
+         font-size: 13.5px !important;
+         color: var(--color-primary) !important;
+         font-weight: 700 !important;
+         transition:
+            transform    var(--transition),
+            box-shadow   var(--transition);
+      }
+      .hero-btn:hover {
+         transform: translateY(-2px);
+         box-shadow: 0 6px 16px rgba(0,0,0,0.18) !important;
+      }
+      .hero-btn:active {
+         transform: scale(0.97);
+      }
+
+      /* ----------------------------------------------------------
+         6. KPI Cards
+      ---------------------------------------------------------- */
+      .kpi-icon {
+         width: 40px;
+         height: 40px;
+         border-radius: 50%;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         flex-shrink: 0;
+         transition: transform var(--transition);
+      }
+      .dashboard-card:hover .kpi-icon {
+         transform: scale(1.1);
+      }
+      .kpi-value {
+         font-size: var(--font-size-lg);
+         font-weight: 700;
+         color: var(--color-text);
+         margin: 0;
+         line-height: 1.2;
+      }
+      .kpi-label {
+         font-size: var(--font-size-xs);
+         font-weight: 700;
+         color: var(--color-text-secondary);
+         letter-spacing: 0.5px;
+         text-transform: uppercase;
+      }
+      .kpi-trend {
+         font-size: var(--font-size-xs);
+         font-weight: 700;
+         color: var(--color-success);
+      }
+      .kpi-desc {
+         font-size: var(--font-size-xs);
+         color: var(--color-text-secondary);
+      }
+
+      /* ----------------------------------------------------------
+         7. Revenue Chart
+      ---------------------------------------------------------- */
+      .chart-stat-label {
+         font-size: 10px;
+         font-weight: 700;
+         letter-spacing: 0.5px;
+         text-transform: uppercase;
+         color: var(--color-text-secondary);
+         display: block;
+      }
+      .chart-stat-value {
+         font-size: var(--font-size-lg);
+         font-weight: 700;
+         color: var(--color-text);
+         margin: 2px 0 0;
+      }
+
+      /* ----------------------------------------------------------
+         8. Recent Orders Table
+      ---------------------------------------------------------- */
+      .orders-table thead th {
+         font-size: var(--font-size-xs);
+         font-weight: 700;
+         color: var(--color-text-secondary);
+         text-transform: uppercase;
+         letter-spacing: 0.5px;
+         border-bottom: 1px solid var(--color-border);
+         padding-bottom: var(--sp-1);
+      }
+      .orders-table tbody tr {
+         transition: background-color var(--transition);
+      }
+      .orders-table tbody tr:hover {
+         background-color: #F8FAFF !important;
+      }
+      .status-badge {
+         display: inline-flex;
+         align-items: center;
+         border-radius: 5px;
+         font-size: 11px;
+         font-weight: 700;
+         padding: 3px 8px;
+      }
+      .status-badge.success { background: var(--color-success-light); color: #137333; }
+      .status-badge.warning { background: #FEF7E0;                    color: #B06000; }
+      .status-badge.danger  { background: var(--color-danger-light);  color: #C5221F; }
+
+      /* ----------------------------------------------------------
+         9. Quick Action Cards  (single canonical definition)
+      ---------------------------------------------------------- */
+      .action-card {
+         background: var(--color-card);
+         border: 1px solid var(--color-border);
+         border-radius: var(--radius-md);
+         box-shadow: var(--shadow-soft);
+         display: block;
+         cursor: pointer;
+         text-decoration: none !important;
+         transition:
+            transform       var(--transition),
+            box-shadow      var(--transition),
+            border-color    var(--transition),
+            background-color var(--transition);
+      }
+      .action-card:hover {
+         transform: translateY(-3px);
+         border-color: var(--color-primary);
+         box-shadow: 0 10px 20px rgba(37, 99, 235, 0.08);
+         background-color: #FAFCFF;
+      }
+      .action-card:active {
+         transform: translateY(-1px) scale(0.99);
+         box-shadow: 0 4px 10px rgba(37, 99, 235, 0.06);
+      }
+      .action-card:focus-visible {
+         outline: 2px solid var(--color-primary);
+         outline-offset: 2px;
+      }
+      .action-card:hover .arrow-icon {
+         transform: translateX(4px);
+         color: var(--color-primary) !important;
+      }
+      .arrow-icon {
+         transition: transform var(--transition), color var(--transition);
+      }
+
+      /* ----------------------------------------------------------
+         10. Activity Timeline  (single canonical definition)
+      ---------------------------------------------------------- */
+      .timeline {
+         position: relative;
+         padding-left: 28px;
+         list-style: none;
+         margin: 0;
+         padding-bottom: 0;
+      }
+      .timeline::before {
+         content: '';
+         position: absolute;
+         left: 11px;
+         top: 4px;
+         bottom: 4px;
+         width: 2px;
+         background-color: var(--color-border);
+         border-radius: 1px;
+      }
+      .timeline-item {
+         position: relative;
+         margin-bottom: var(--sp-2);
+         transition: transform var(--transition);
+      }
+      .timeline-item:last-child { margin-bottom: 0; }
+      .timeline-item:hover      { transform: translateX(3px); }
+      .timeline-item:hover p    { color: var(--color-primary) !important; }
+      .timeline-item p          { transition: color var(--transition); }
+      .timeline-icon {
+         position: absolute;
+         left: -28px;
+         width: 24px;
+         height: 24px;
+         border-radius: 50%;
+         background-color: #fff;
+         border: 2px solid var(--color-border);
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         font-size: 10px;
+         z-index: 1;
+      }
+
+      /* ----------------------------------------------------------
+         11. Misc — Badge Stock, List Group
+      ---------------------------------------------------------- */
+      .badge-stock {
+         background-color: #EBF7ED;
+         color: var(--color-success);
+         font-size: var(--font-size-xs);
+         font-weight: 700;
+         padding: 4px 10px;
+         border-radius: 4px;
+         display: inline-block;
+      }
+      .list-group-item-action {
+         transition: all var(--transition);
+      }
+      .list-group-item-action:hover {
+         background-color: var(--color-bg) !important;
+         padding-left: 8px !important;
+         color: var(--color-primary) !important;
+      }
+
+      /* ----------------------------------------------------------
+         12. Skeleton Loading
+      ---------------------------------------------------------- */
+      @keyframes sk-shimmer {
+         0%   { background-position: -600px 0; }
+         100% { background-position:  600px 0; }
+      }
+      .sk-box {
+         background: linear-gradient(90deg, #F1F5F9 0px, #E2E8F0 200px, #F1F5F9 400px);
+         background-size: 600px 100%;
+         animation: sk-shimmer 1.5s ease-in-out infinite;
+         border-radius: 6px;
+         display: block;
+      }
+      .sk-card {
+         background: #fff;
+         border: 1px solid var(--color-border);
+         border-radius: var(--radius-lg);
+         padding: 24px;
+         height: 140px;
+      }
+      /* Loading state toggle */
+      #skeleton-kpi-row { display: none; }
+      #skeleton-chart   { display: none; }
+      body.page-loading #skeleton-kpi-row  { display: flex; }
+      body.page-loading #skeleton-chart    { display: block; }
+      body.page-loading #live-kpi-row      { visibility: hidden; height: 0; overflow: hidden; margin: 0 !important; }
+      body.page-loading #live-chart-card   { visibility: hidden; height: 0; overflow: hidden; margin: 0 !important; }
+
+      /* ----------------------------------------------------------
+         13. Empty States
+      ---------------------------------------------------------- */
+      .empty-state {
+         display: none;
+         flex-direction: column;
+         align-items: center;
+         justify-content: center;
+         padding: 40px var(--sp-3);
+         text-align: center;
+         gap: 0;
+      }
+      .empty-state.show { display: flex; }
+      .empty-icon {
+         width: 60px;
+         height: 60px;
+         border-radius: var(--radius-md);
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         font-size: 22px;
+         margin-bottom: var(--sp-2);
+         flex-shrink: 0;
+      }
+      .empty-state h6 {
+         font-size: var(--font-size-base);
+         font-weight: 700;
+         color: var(--color-text);
+         margin-bottom: 6px;
+      }
+      .empty-state p {
+         font-size: var(--font-size-sm);
+         color: var(--color-text-secondary);
+         margin-bottom: 0;
+         max-width: 260px;
+         line-height: 1.6;
+      }
+
+      /* ----------------------------------------------------------
+         14. UX Polish
+      ---------------------------------------------------------- */
+
+      /* Global transition baseline */
+      a, button, .btn { transition: all var(--transition); }
+
+      /* Button press */
+      .btn:active  { transform: scale(0.97); box-shadow: none !important; }
+      .btn:focus-visible {
+         outline: 2px solid var(--color-primary);
+         outline-offset: 3px;
+         box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+      }
+
+      /* Swagger / outline buttons */
+      .btn-outline-primary:hover { transform: translateY(-1px); }
+
+      /* Badge scale on parent hover */
+      a:hover .badge { transform: scale(1.08); }
+
+      /* Navbar dropdown items: indent on hover */
+      .navbar-dropdown-menu .dropdown-item {
+         transition:
+            background-color var(--transition),
+            color            var(--transition),
+            padding-left     150ms ease-in-out;
+      }
+      .navbar-dropdown-menu .dropdown-item:hover { padding-left: 16px; }
+
+      /* ----------------------------------------------------------
+         15. Responsive Breakpoints
+      ---------------------------------------------------------- */
+
+      /* Tablet (≤ 991px) */
+      @media (max-width: 991.98px) {
+         .hero-section {
+            flex-direction: column;
+            min-height: auto;
+            padding: 28px var(--sp-3);
+            gap: var(--sp-2);
+         }
+         .hero-section h2 { font-size: 18px; }
+
+         /* Hide chart filter toggle on tablet */
+         .btn-group.btn-group-toggle { display: none !important; }
+
+         /* Quick actions: 2 per row */
+         .action-card-col { flex: 0 0 50%; max-width: 50%; }
+      }
+
+      /* Mobile (≤ 767px) */
+      @media (max-width: 767.98px) {
+         .container { padding-left: 12px !important; padding-right: 12px !important; }
+
+         .hero-section {
+            min-height: auto;
+            padding: 20px var(--sp-2);
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--sp-2);
+         }
+         .hero-avatar { width: 52px !important; height: 52px !important; font-size: 20px !important; }
+         .hero-section h2 { font-size: 16px !important; }
+         .hero-right {
+            width: 100%;
+            flex-direction: row !important;
+            align-items: center !important;
+            justify-content: space-between;
+         }
+
+         /* KPI: single column */
+         .kpi-col { flex: 0 0 100%; max-width: 100%; }
+
+         /* Quick actions: single column */
+         .action-card-col { flex: 0 0 100%; max-width: 100%; }
+
+         /* Chart stats: stack */
+         .chart-stats-row { flex-wrap: wrap; gap: 12px !important; }
+         .chart-stats-row > div {
+            border-right: none !important;
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 10px;
+            flex: 0 0 100%;
+         }
+         .chart-stats-row > div:last-child { border-bottom: none; }
+
+         /* Timeline: compact */
+         .timeline         { padding-left: 22px; }
+         .timeline::before { left: 8px; }
+         .timeline-icon    { left: -22px; width: 20px; height: 20px; font-size: 9px; }
+
+         /* Cards: reduce padding */
+         .dashboard-card { padding: 16px !important; }
+
+         /* Hide date column */
+         .orders-date-col { display: none !important; }
+      }
+
+      /* Honour OS-level reduced-motion preference */
+      @media (prefers-reduced-motion: reduce) {
+         *, *::before, *::after {
+            animation-duration:        0.01ms !important;
+            animation-iteration-count: 1      !important;
+            transition-duration:       0.01ms !important;
+         }
+      }
+      </style>
+   </head>
+   <body>
+      
+      <th:block th:include="_menu"></th:block>
+      
+      <div class="container dash-container mt-4 mb-5">
+         <!-- Modern Compact Welcome Hero -->
+         <section class="hero-section mb-4" aria-label="Dashboard Welcome Hero">
+             
+             <!-- Decorative light patterns inside hero for premium feel -->
+             <div class="position-absolute" style="width: 300px; height: 300px; background: rgba(255,255,255,0.03); border-radius: 50%; top: -100px; right: -50px; pointer-events: none;"></div>
+             <div class="position-absolute" style="width: 150px; height: 150px; background: rgba(255,255,255,0.05); border-radius: 50%; bottom: -50px; left: 10%; pointer-events: none;"></div>
+
+              <div class="d-flex align-items-center" style="gap: 20px; z-index: 1;">
+                 <!-- User avatar inside hero -->
+                 <img th:if="${userAvatarUrl != null and !#strings.isEmpty(userAvatarUrl)}" 
+                      th:src="${userAvatarUrl}" 
+                      referrerpolicy="no-referrer"
+                      onerror="this.onerror=null; this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';"
+                      class="shadow hero-avatar" 
+                      style="width: 72px; height: 72px; border-radius: 50%; object-fit: cover; border: 4px solid rgba(255,255,255,0.25);" 
+                      alt="Avatar" />
+                 <div th:style="${userAvatarUrl != null and !#strings.isEmpty(userAvatarUrl)} ? 'display:none;' : ''" 
+                      class="d-flex align-items-center justify-content-center text-primary font-weight-bold shadow hero-avatar" 
+                      style="width: 72px; height: 72px; background-color: #FFFFFF; border-radius: 50%; font-size: 28px; border: 4px solid rgba(255,255,255,0.25);" 
+                      th:utext="${userDisplayName != null ? userDisplayName.substring(0,1).toUpperCase() : #request.userPrincipal.name.substring(0,1).toUpperCase()}">
+                    U
+                 </div>
+                 <div>
+                    <span class="text-white-50 small font-weight-bold text-uppercase" style="letter-spacing: 1px;">Welcome back</span>
+                    <h2 class="font-weight-bold text-white mb-1" style="font-size: 22px; margin: 0; line-height: 1.2;" th:utext="${userDisplayName != null ? userDisplayName : #request.userPrincipal.name}">User Name</h2>
+                    <p class="text-white-50 mb-0 small" style="max-width: 480px; font-weight: 500;">
+                       <span sec:authorize="hasRole('ROLE_ADMIN')">Quản trị viên hệ thống cửa hàng giày trực tuyến. Theo dõi doanh thu, quản lý danh mục và vận hành hiệu quả.</span>
+                       <span sec:authorize="hasRole('ROLE_USER')">Khám phá các bộ sưu tập giày thời thượng, quản lý giỏ hàng và xem lại lịch sử đơn hàng của bạn.</span>
+                    </p>
+                 </div>
+              </div>
+             
+             <div class="mt-3 mt-md-0 d-flex flex-column align-items-md-end hero-right" style="gap: 12px; z-index: 1;">
+                <span class="text-white-50 small font-weight-medium"><i class="far fa-calendar-alt mr-1.5"></i>Hôm nay: <span id="current-date-span-hero">24/07/2026</span></span>
+                <a href="#live-kpi-row" class="btn btn-light px-4 py-2.5 font-weight-bold hero-btn" role="button" aria-label="Scroll to dashboard details">
+                  View Dashboard <i class="fas fa-chevron-down ml-1.5" style="font-size: 10px;"></i>
+                </a>
+             </div>
+             
+          </section>
+          
+         <!-- 1. KPI Statistics -->
+         <div class="row mb-2" id="live-kpi-row" data-dashboard-anchor="dashboard-details">
+            
+            <!-- KPI Card 1: Revenue -->
+            <div class="col-lg-3 col-md-6 col-12 kpi-col mb-4">
+               <div class="dashboard-card p-4 d-flex flex-column justify-content-between h-100" style="min-height: 140px;">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                     <span class="text-muted small font-weight-bold" style="letter-spacing: 0.5px; font-size: 11px;">
+                        <span sec:authorize="hasRole('ROLE_ADMIN')">TOTAL REVENUE</span>
+                        <span sec:authorize="hasRole('ROLE_USER')">TOTAL SPENT</span>
+                     </span>
+                     <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background-color: #ECFDF5; color: var(--color-success);">
+                        <i class="fas fa-dollar-sign"></i>
+                     </div>
+                  </div>
+                  <div>
+                     <h3 class="font-weight-bold text-dark mb-1" style="font-size: 22px; margin: 0;" th:utext="${#numbers.formatDecimal(totalRevenue * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</h3>
+                     <div class="d-flex align-items-center mt-1" style="gap: 4px;">
+                        <span class="text-success small font-weight-bold"><i class="fas fa-arrow-up mr-0.5"></i>+12.4%</span>
+                        <span class="text-muted" style="font-size: 11px;">so với tháng trước</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <!-- KPI Card 2: Orders -->
+            <div class="col-lg-3 col-md-6 col-12 kpi-col mb-4">
+               <div class="dashboard-card p-4 d-flex flex-column justify-content-between h-100" style="min-height: 140px;">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                     <span class="text-muted small font-weight-bold" style="letter-spacing: 0.5px; font-size: 11px;">
+                        <span sec:authorize="hasRole('ROLE_ADMIN')">TOTAL ORDERS</span>
+                        <span sec:authorize="hasRole('ROLE_USER')">ORDERS PLACED</span>
+                     </span>
+                     <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background-color: #EFF6FF; color: var(--color-primary);">
+                        <i class="fas fa-shopping-bag"></i>
+                     </div>
+                  </div>
+                  <div>
+                     <h3 class="font-weight-bold text-dark mb-1" style="font-size: 22px; margin: 0;" th:utext="${totalOrders}">0</h3>
+                     <div class="d-flex align-items-center mt-1" style="gap: 4px;">
+                        <span class="text-success small font-weight-bold"><i class="fas fa-arrow-up mr-0.5"></i>+8.2%</span>
+                        <span class="text-muted" style="font-size: 11px;">đơn hoàn tất</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <!-- KPI Card 3: Products (Admin) / Wishlist (User) -->
+            <div class="col-lg-3 col-md-6 col-12 kpi-col mb-4">
+               <div class="dashboard-card p-4 d-flex flex-column justify-content-between h-100" style="min-height: 140px;">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                     <span class="text-muted small font-weight-bold" style="letter-spacing: 0.5px; font-size: 11px;">
+                        <span sec:authorize="hasRole('ROLE_ADMIN')">TOTAL PRODUCTS</span>
+                        <span sec:authorize="hasRole('ROLE_USER')">SẢN PHẨM YÊU THÍCH</span>
+                     </span>
+                     <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background-color: #FEF3C7; color: var(--color-warning);">
+                        <i sec:authorize="hasRole('ROLE_ADMIN')" class="fas fa-boxes"></i>
+                        <i sec:authorize="hasRole('ROLE_USER')" class="fas fa-heart"></i>
+                     </div>
+                  </div>
+                  <div>
+                     <h3 sec:authorize="hasRole('ROLE_ADMIN')" class="font-weight-bold text-dark mb-1" style="font-size: 22px; margin: 0;">11</h3>
+                     <h3 sec:authorize="hasRole('ROLE_USER')" class="font-weight-bold text-dark mb-1" style="font-size: 22px; margin: 0;" th:utext="${wishlistCount != null ? wishlistCount : 0}">0</h3>
+                     <div class="d-flex align-items-center mt-1" style="gap: 4px;">
+                        <span sec:authorize="hasRole('ROLE_ADMIN')" class="text-success small font-weight-bold"><i class="fas fa-arrow-up mr-0.5"></i>+4.5%</span>
+                        <span sec:authorize="hasRole('ROLE_USER')" class="text-primary small font-weight-bold"><i class="fas fa-bookmark mr-0.5"></i>Đã lưu</span>
+                        <span sec:authorize="hasRole('ROLE_ADMIN')" class="text-muted" style="font-size: 11px;">sản phẩm hoạt động</span>
+                        <span sec:authorize="hasRole('ROLE_USER')" class="text-muted" style="font-size: 11px;">sản phẩm ưa thích</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            <!-- KPI Card 4: Customers (Admin) / Addresses (User) -->
+            <div class="col-lg-3 col-md-6 col-12 kpi-col mb-4">
+               <div class="dashboard-card p-4 d-flex flex-column justify-content-between h-100" style="min-height: 140px;">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                     <span class="text-muted small font-weight-bold" style="letter-spacing: 0.5px; font-size: 11px;">
+                        <span sec:authorize="hasRole('ROLE_ADMIN')">TOTAL CUSTOMERS</span>
+                        <span sec:authorize="hasRole('ROLE_USER')">SỔ ĐỊA CHỈ GIAO HÀNG</span>
+                     </span>
+                     <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background-color: #F3E8FF; color: #8B5CF6;">
+                        <i sec:authorize="hasRole('ROLE_ADMIN')" class="fas fa-users"></i>
+                        <i sec:authorize="hasRole('ROLE_USER')" class="fas fa-map-marked-alt"></i>
+                     </div>
+                  </div>
+                  <div>
+                     <h3 sec:authorize="hasRole('ROLE_ADMIN')" class="font-weight-bold text-dark mb-1" style="font-size: 22px; margin: 0;">12</h3>
+                     <h3 sec:authorize="hasRole('ROLE_USER')" class="font-weight-bold text-dark mb-1" style="font-size: 22px; margin: 0;" id="user-address-kpi-val">1</h3>
+                     <div class="d-flex align-items-center mt-1" style="gap: 4px;">
+                        <span sec:authorize="hasRole('ROLE_ADMIN')" class="text-success small font-weight-bold"><i class="fas fa-arrow-up mr-0.5"></i>+15.3%</span>
+                        <span sec:authorize="hasRole('ROLE_USER')" class="text-success small font-weight-bold"><i class="fas fa-check-circle mr-0.5"></i>Sẵn sàng</span>
+                        <span sec:authorize="hasRole('ROLE_ADMIN')" class="text-muted" style="font-size: 11px;">thành viên đăng ký</span>
+                        <span sec:authorize="hasRole('ROLE_USER')" class="text-muted" style="font-size: 11px;">địa chỉ nhận hàng</span>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+         </div>
+
+         <!-- 2. Bottom Details Section -->
+         <div class="row">
+            <!-- Left Column: Profile Card -->
+            <div class="col-lg-4 col-12 mb-4">
+               <div class="dashboard-card p-4">
+                  
+                  <div class="d-flex align-items-center mb-4" style="gap: 16px;">
+                     <!-- Profile Avatar Box -->
+                     <div class="d-inline-flex align-items-center justify-content-center text-white font-weight-bold shadow-sm" 
+                          style="width: 64px; height: 64px; background-color: #3B82F6; border-radius: 50%; font-size: 26px; border: 3px solid #EFF6FF;" 
+                          th:utext="${#strings.substring(#request.userPrincipal.name, 0, 1).toUpperCase()}">
+                        U
+                     </div>
+                     <div class="text-left">
+                        <h4 class="font-weight-bold text-dark mb-1" style="font-size: 16px; margin: 0;" th:utext="${#request.userPrincipal.name}">User</h4>
+                        <div class="d-flex gap-1.5 mt-1">
+                           <span sec:authorize="hasRole('ROLE_ADMIN')" class="badge badge-danger px-2 py-0.5 font-weight-bold" style="font-size: 9px; background-color: var(--color-danger); border-radius: 4px; letter-spacing: 0.3px;">ADMIN</span>
+                           <span sec:authorize="hasRole('ROLE_USER')" class="badge badge-primary px-2 py-0.5 font-weight-bold" style="font-size: 9px; background-color: var(--color-primary); border-radius: 4px; letter-spacing: 0.3px;">CUSTOMER</span>
+                        </div>
+                     </div>
+                  </div>
+                  
+                  <!-- Detailed Metadata list -->
+                  <div class="border-top pt-3" style="font-size: 13.5px; border-top: 1px solid var(--color-border) !important;">
+                     <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Username</span>
+                        <span class="font-weight-bold text-dark" th:utext="${#request.userPrincipal.name}">user</span>
+                     </div>
+                     <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted">Trạng thái</span>
+                        <span class="text-success font-weight-bold"><i class="fas fa-check-circle mr-1"></i>Đang hoạt động</span>
+                     </div>
+                     <div class="d-flex justify-content-between">
+                        <span class="text-muted">Bảo mật</span>
+                        <span class="text-primary font-weight-bold"><i class="fas fa-shield-alt mr-1"></i>SSL Secured</span>
+                     </div>
+                  </div>
+                  
+               </div>
+               
+               <!-- Recent Activity & AI Status Card (Admin Only) -->
+               <div sec:authorize="hasRole('ROLE_ADMIN')">
+                  <!-- Recent Activity Timeline Card -->
+                  <div class="dashboard-card p-4 mt-4">
+                     <h5 class="font-weight-bold text-dark mb-4" style="font-size: 16px; letter-spacing: -0.3px;"><i class="fas fa-list-ul text-primary mr-2"></i>Recent Activity</h5>
+                     
+                     <ul class="timeline mb-0">
+                        <!-- Activity 1 -->
+                        <li class="timeline-item">
+                           <div class="timeline-icon" style="border-color: #3B82F6; background-color: #EFF6FF; color: #3B82F6;">
+                              <i class="fas fa-plus"></i>
+                           </div>
+                           <div>
+                              <p class="text-dark mb-1 font-weight-medium" style="font-size: 13px; line-height: 1.4; margin: 0;">Sản phẩm "Adidas Stan Smith" mới được đăng bán.</p>
+                              <span class="text-muted small" style="font-size: 11px;"><i class="far fa-clock mr-1"></i>10 phút trước</span>
+                           </div>
+                        </li>
+                        <!-- Activity 2 -->
+                        <li class="timeline-item">
+                           <div class="timeline-icon" style="border-color: #10B981; background-color: #ECFDF5; color: #10B981;">
+                              <i class="fas fa-shopping-cart"></i>
+                           </div>
+                           <div>
+                              <p class="text-dark mb-1 font-weight-medium" style="font-size: 13px; line-height: 1.4; margin: 0;">Đơn hàng mới #ORD-9024 được khởi tạo thành công.</p>
+                              <span class="text-muted small" style="font-size: 11px;"><i class="far fa-clock mr-1"></i>25 phút trước</span>
+                           </div>
+                        </li>
+                        <!-- Activity 3 -->
+                        <li class="timeline-item">
+                           <div class="timeline-icon" style="border-color: #06B6D4; background-color: #ECFEFF; color: #06B6D4;">
+                              <i class="fas fa-dollar-sign"></i>
+                           </div>
+                           <div>
+                              <p class="text-dark mb-1 font-weight-medium" style="font-size: 13px; line-height: 1.4; margin: 0;">Thanh toán $85.00 nhận thành công qua ví PayPal.</p>
+                              <span class="text-muted small" style="font-size: 11px;"><i class="far fa-clock mr-1"></i>28 phút trước</span>
+                           </div>
+                        </li>
+                        <!-- Activity 4 -->
+                        <li class="timeline-item">
+                           <div class="timeline-icon" style="border-color: #F59E0B; background-color: #FFFBEB; color: #F59E0B;">
+                              <i class="fas fa-user-plus"></i>
+                           </div>
+                           <div>
+                              <p class="text-dark mb-1 font-weight-medium" style="font-size: 13px; line-height: 1.4; margin: 0;">Thành viên mới "Nguyễn Thị Mai" đăng ký tài khoản.</p>
+                              <span class="text-muted small" style="font-size: 11px;"><i class="far fa-clock mr-1"></i>1 giờ trước</span>
+                           </div>
+                        </li>
+                     </ul>
+                  </div>
+
+                  <!-- AI Service Status Card -->
+                  <div class="dashboard-card p-4 mt-4">
+                     <h5 class="font-weight-bold text-dark mb-3" style="font-size: 16px; letter-spacing: -0.3px;"><i class="fas fa-brain text-purple mr-2" style="color: #8B5CF6;"></i>AI Service Status</h5>
+                     
+                     <div class="border-top pt-3" style="font-size: 13.5px; border-top: 1px solid var(--color-border) !important;">
+                        <div class="d-flex justify-content-between align-items-center mb-2" style="margin-bottom: 10px;">
+                           <span class="text-muted">Dịch vụ AI</span>
+                           <span class="badge px-2.5 py-1 font-weight-bold" style="background-color: #E6F4EA; color: #137333; border-radius: 4px; font-size: 11px;">Hoạt động</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-2" style="margin-bottom: 10px;">
+                           <span class="text-muted">Kết nối mạng</span>
+                           <span class="badge px-2.5 py-1 font-weight-bold" style="background-color: #E8F0FE; color: #1A73E8; border-radius: 4px; font-size: 11px;">Đã kết nối</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-4" style="margin-bottom: 16px;">
+                           <span class="text-muted">Health Check</span>
+                           <span class="text-muted font-weight-medium" style="font-size: 12px;"><i class="far fa-clock mr-1"></i>Vừa xong</span>
+                        </div>
+                        
+                        <a href="http://localhost:8000/docs" target="_blank" class="btn btn-outline-primary btn-block py-2.5 font-weight-bold" 
+                           style="border-radius: var(--radius-sm); font-size: 12.5px; transition: all 0.2s;"
+                           onmouseover="this.style.backgroundColor='var(--color-primary)'; this.style.color='#fff';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='var(--color-primary)';">
+                           <i class="fas fa-book-open mr-2"></i>Swagger Documentation
+                        </a>
+                     </div>
+                  </div>
+               </div>
+            </div>
+            
+            <!-- Right Column: Chart, Orders & Quick Actions -->
+            <div class="col-lg-8 col-12 mb-4">
+               <!-- Revenue Analytics Chart Section (Admin Only) -->
+               <div sec:authorize="hasRole('ROLE_ADMIN')" class="dashboard-card p-4 mb-4" id="live-chart-card">
+                  <div class="d-flex justify-content-between align-items-center mb-4">
+                     <div>
+                        <h5 class="font-weight-bold text-dark mb-0" style="font-size: 16px; letter-spacing: -0.3px;"><i class="fas fa-chart-area text-primary mr-2"></i>Revenue Analytics</h5>
+                        <span class="text-muted small">Biểu đồ thống kê kết quả hoạt động kinh doanh</span>
+                     </div>
+                     <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-outline-secondary btn-sm active" style="font-size: 11px; border-radius: 4px; padding: 4px 10px;">
+                           <input type="radio" name="options" id="option1" checked> 12 tháng qua
+                        </label>
+                        <label class="btn btn-outline-secondary btn-sm" style="font-size: 11px; border-radius: 4px; padding: 4px 10px; margin-left: 4px;">
+                           <input type="radio" name="options" id="option2"> 30 ngày qua
+                        </label>
+                     </div>
+                  </div>
+                  
+                  <!-- Performance high-level figures -->
+                  <div class="row chart-stats-row mb-4" style="gap: 24px; margin-left: 0; margin-right: 0;">
+                     <div class="pl-0 pr-4 border-right" style="border-right: 1px solid var(--color-border) !important;">
+                        <span class="text-muted small font-weight-bold d-block" style="font-size: 10px; letter-spacing: 0.5px;">REVENUE</span>
+                        <h4 class="font-weight-bold text-dark mb-0 mt-1" style="font-size: 20px;" th:utext="${#numbers.formatDecimal(totalRevenue * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</h4>
+                     </div>
+                     <div class="px-4 border-right" style="border-right: 1px solid var(--color-border) !important;">
+                        <span class="text-muted small font-weight-bold d-block" style="font-size: 10px; letter-spacing: 0.5px;">ORDERS</span>
+                        <h4 class="font-weight-bold text-dark mb-0 mt-1" style="font-size: 20px;" th:utext="${totalOrders}">0</h4>
+                     </div>
+                     <div class="px-4">
+                        <span class="text-muted small font-weight-bold d-block" style="font-size: 10px; letter-spacing: 0.5px;">GROWTH</span>
+                        <span class="badge badge-success px-2.5 py-1.5 font-weight-bold d-inline-block mt-1" style="font-size: 11px; background-color: var(--color-success); border-radius: 4px;"><i class="fas fa-arrow-up mr-1"></i>+12.4%</span>
+                     </div>
+                  </div>
+                  
+                  <!-- SVG Mockup Chart Area -->
+                  <div class="chart-container" style="position: relative; height: 180px; width: 100%;">
+                     <svg viewBox="0 0 500 150" preserveAspectRatio="none" style="width: 100%; height: 100%; overflow: visible;">
+                        <defs>
+                           <linearGradient id="chart-gradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stop-color="var(--color-primary)" stop-opacity="0.15"/>
+                              <stop offset="100%" stop-color="var(--color-primary)" stop-opacity="0.00"/>
+                           </linearGradient>
+                        </defs>
+                        <!-- Grid lines -->
+                        <line x1="0" y1="30" x2="500" y2="30" stroke="#F1F5F9" stroke-width="1" stroke-dasharray="4,4"/>
+                        <line x1="0" y1="75" x2="500" y2="75" stroke="#F1F5F9" stroke-width="1" stroke-dasharray="4,4"/>
+                        <line x1="0" y1="120" x2="500" y2="120" stroke="#F1F5F9" stroke-width="1" stroke-dasharray="4,4"/>
+                        
+                        <!-- Area path -->
+                        <path d="M 0 150 L 0 120 Q 50 80 100 95 T 200 45 T 300 70 T 400 35 T 500 20 L 500 150 Z" fill="url(#chart-gradient)"/>
+                        <!-- Line path -->
+                        <path d="M 0 120 Q 50 80 100 95 T 200 45 T 300 70 T 400 35 T 500 20" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round"/>
+                        
+                        <!-- Active dots -->
+                        <circle cx="200" cy="45" r="4.5" fill="var(--color-primary)" stroke="#FFFFFF" stroke-width="2"/>
+                        <circle cx="400" cy="35" r="4.5" fill="var(--color-primary)" stroke="#FFFFFF" stroke-width="2"/>
+                     </svg>
+                     <!-- X-axis labels -->
+                     <div class="d-flex justify-content-between text-muted mt-2" style="font-size: 10px; font-weight: 600;">
+                        <span>Jan</span>
+                        <span>Feb</span>
+                        <span>Mar</span>
+                        <span>Apr</span>
+                        <span>May</span>
+                        <span>Jun</span>
+                        <span>Jul</span>
+                        <span>Aug</span>
+                        <span>Sep</span>
+                        <span>Oct</span>
+                        <span>Nov</span>
+                        <span>Dec</span>
+                     </div>
+                  </div>
+               </div>
+
+               <!-- Recent Orders Widget -->
+               <div class="dashboard-card p-4 mb-4">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                     <div>
+                        <h5 class="font-weight-bold text-dark mb-0" style="font-size: 16px; letter-spacing: -0.3px;"><i class="fas fa-history text-primary mr-2"></i>Recent Orders</h5>
+                        <span class="text-muted small">Danh sách các đơn đặt hàng mới nhận gần đây</span>
+                     </div>
+                     <a th:href="@{/admin/orderList}" class="text-primary font-weight-bold small" style="text-decoration: none;">Xem tất cả <i class="fas fa-arrow-right ml-1"></i></a>
+                  </div>
+                  
+                  <div class="table-responsive" id="orders-table-wrapper">
+                     <table class="table table-hover table-borderless mb-0" style="font-size: 13.5px;">
+                        <thead>
+                           <tr class="border-bottom" style="border-bottom: 1px solid var(--color-border) !important; color: var(--color-text-secondary); font-weight: 600;">
+                              <th class="pl-0 pb-3">Mã đơn</th>
+                              <th class="pb-3">Khách hàng</th>
+                              <th class="pb-3">Sản phẩm</th>
+                              <th class="pb-3">Trạng thái</th>
+                              <th class="pb-3 text-right">Tổng tiền</th>
+                              <th class="pr-0 pb-3 text-right orders-date-col">Ngày mua</th>
+                           </tr>
+                        </thead>
+                        <tbody id="orders-tbody">
+                           <tr class="align-middle">
+                              <td class="pl-0 py-3 font-weight-bold text-primary">#ORD-9024</td>
+                              <td class="py-3 font-weight-medium text-dark">Lê Hoài Nam</td>
+                              <td class="py-3 text-muted">Adidas Stan Smith M...</td>
+                              <td class="py-3">
+                                 <span class="badge px-2.5 py-1.5 font-weight-bold" style="background-color: #E6F4EA; color: #137333; border-radius: 4px; font-size: 11px;">Hoàn tất</span>
+                              </td>
+                              <td class="py-3 font-weight-bold text-dark text-right">$85.00</td>
+                              <td class="pr-0 py-3 text-muted text-right orders-date-col">24/07/2026</td>
+                           </tr>
+                           <tr class="align-middle">
+                              <td class="pl-0 py-3 font-weight-bold text-primary">#ORD-9023</td>
+                              <td class="py-3 font-weight-medium text-dark">Trần Thu Hà</td>
+                              <td class="py-3 text-muted">Nike Air Force 1 Sh...</td>
+                              <td class="py-3">
+                                 <span class="badge px-2.5 py-1.5 font-weight-bold" style="background-color: #FEF7E0; color: #B06000; border-radius: 4px; font-size: 11px;">Đang xử lý</span>
+                              </td>
+                              <td class="py-3 font-weight-bold text-dark text-right">$110.00</td>
+                              <td class="pr-0 py-3 text-muted text-right orders-date-col">23/07/2026</td>
+                           </tr>
+                           <tr class="align-middle">
+                              <td class="pl-0 py-3 font-weight-bold text-primary">#ORD-9022</td>
+                              <td class="py-3 font-weight-medium text-dark">Phạm Minh Đức</td>
+                              <td class="py-3 text-muted">Converse Chuck Tayl...</td>
+                              <td class="py-3">
+                                 <span class="badge px-2.5 py-1.5 font-weight-bold" style="background-color: #E6F4EA; color: #137333; border-radius: 4px; font-size: 11px;">Hoàn tất</span>
+                              </td>
+                              <td class="py-3 font-weight-bold text-dark text-right">$65.00</td>
+                              <td class="pr-0 py-3 text-muted text-right orders-date-col">22/07/2026</td>
+                           </tr>
+                           <tr class="align-middle">
+                              <td class="pl-0 py-3 font-weight-bold text-primary">#ORD-9021</td>
+                              <td class="py-3 font-weight-medium text-dark">Nguyễn Thị Mai</td>
+                              <td class="py-3 text-muted">Vans Old Skool Clas...</td>
+                              <td class="py-3">
+                                 <span class="badge px-2.5 py-1.5 font-weight-bold" style="background-color: #FCE8E6; color: #C5221F; border-radius: 4px; font-size: 11px;">Đã hủy</span>
+                              </td>
+                              <td class="py-3 font-weight-bold text-dark text-right">$60.00</td>
+                              <td class="pr-0 py-3 text-muted text-right orders-date-col">21/07/2026</td>
+                           </tr>
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+
+               <!-- Quick Actions Section -->
+               <div class="mb-4">
+                  <h5 class="font-weight-bold text-dark mb-3" style="font-size: 16px; letter-spacing: -0.3px;"><i class="fas fa-th text-primary mr-2"></i>Thao tác nhanh</h5>
+                  <div class="row">
+                     <!-- ADMIN Quick Actions -->
+                     <th:block sec:authorize="hasRole('ROLE_ADMIN')">
+                        <!-- Card 1: Add Product -->
+                        <div class="col-md-6 col-12 action-card-col mb-4">
+                           <a th:href="@{/admin/product}" class="action-card p-4">
+                              <div class="d-flex align-items-start" style="gap: 16px;">
+                                 <div class="rounded d-flex align-items-center justify-content-center text-primary" style="width: 44px; height: 44px; background-color: #EFF6FF; flex-shrink: 0; border-radius: var(--radius-sm) !important;">
+                                    <i class="fas fa-plus-circle fa-lg"></i>
+                                 </div>
+                                 <div style="flex: 1;">
+                                    <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Add Product</h6>
+                                    <p class="text-muted mb-0 small" style="font-size: 12px; line-height: 1.4;">Đăng bán sản phẩm giày mới lên cửa hàng.</p>
+                                 </div>
+                                 <i class="fas fa-chevron-right text-muted arrow-icon align-self-center"></i>
+                              </div>
+                           </a>
+                        </div>
+
+                        <!-- Card 2: Manage Orders -->
+                        <div class="col-md-6 col-12 action-card-col mb-4">
+                           <a th:href="@{/admin/orderList}" class="action-card p-4">
+                              <div class="d-flex align-items-start" style="gap: 16px;">
+                                 <div class="rounded d-flex align-items-center justify-content-center text-success" style="width: 44px; height: 44px; background-color: #ECFDF5; flex-shrink: 0; border-radius: var(--radius-sm) !important;">
+                                    <i class="fas fa-list-alt fa-lg"></i>
+                                 </div>
+                                 <div style="flex: 1;">
+                                    <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Manage Orders</h6>
+                                    <p class="text-muted mb-0 small" style="font-size: 12px; line-height: 1.4;">Xem và xử lý danh sách đơn hàng từ người mua.</p>
+                                 </div>
+                                 <i class="fas fa-chevron-right text-muted arrow-icon align-self-center"></i>
+                              </div>
+                           </a>
+                        </div>
+
+                        <!-- Card 3: AI Image Inspection -->
+                        <div class="col-md-6 col-12 action-card-col mb-4">
+                           <a href="javascript:void(0)" onclick="$('#aiInspectModal').modal('show')" class="action-card p-4">
+                              <div class="d-flex align-items-start" style="gap: 16px;">
+                                 <div class="rounded d-flex align-items-center justify-content-center" style="width: 44px; height: 44px; background-color: #F3E8FF; color: #8B5CF6; flex-shrink: 0; border-radius: var(--radius-sm) !important;">
+                                    <i class="fas fa-microscope fa-lg"></i>
+                                 </div>
+                                 <div style="flex: 1;">
+                                    <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">AI Image Inspection</h6>
+                                    <p class="text-muted mb-0 small" style="font-size: 12px; line-height: 1.4;">Phân tích chất lượng ảnh giày bằng AI trước khi upload.</p>
+                                 </div>
+                                 <i class="fas fa-chevron-right text-muted arrow-icon align-self-center"></i>
+                              </div>
+                           </a>
+                        </div>
+
+                        <!-- Card 4: Categories -->
+                        <div class="col-md-6 col-12 action-card-col mb-4">
+                           <a th:href="@{/productList}" class="action-card p-4">
+                              <div class="d-flex align-items-start" style="gap: 16px;">
+                                 <div class="rounded d-flex align-items-center justify-content-center text-warning" style="width: 44px; height: 44px; background-color: #FEF3C7; flex-shrink: 0; border-radius: var(--radius-sm) !important;">
+                                    <i class="fas fa-tags fa-lg"></i>
+                                 </div>
+                                 <div style="flex: 1;">
+                                    <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Categories</h6>
+                                    <p class="text-muted mb-0 small" style="font-size: 12px; line-height: 1.4;">Phân loại danh mục sản phẩm và thương hiệu.</p>
+                                 </div>
+                                 <i class="fas fa-chevron-right text-muted arrow-icon align-self-center"></i>
+                              </div>
+                           </a>
+                        </div>
+
+                        <!-- Card 5: Coupons -->
+                        <div class="col-md-6 col-12 action-card-col mb-4">
+                           <a href="javascript:void(0)" onclick="openVoucherAdminModal()" class="action-card p-4">
+                              <div class="d-flex align-items-start" style="gap: 16px;">
+                                 <div class="rounded d-flex align-items-center justify-content-center text-danger" style="width: 44px; height: 44px; background-color: #FEE2E2; flex-shrink: 0; border-radius: var(--radius-sm) !important;">
+                                    <i class="fas fa-ticket-alt fa-lg"></i>
+                                 </div>
+                                 <div style="flex: 1;">
+                                    <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Coupons / Vouchers</h6>
+                                    <p class="text-muted mb-0 small" style="font-size: 12px; line-height: 1.4;">Tạo và phân bổ mã giảm giá, khuyến mãi.</p>
+                                 </div>
+                                 <i class="fas fa-chevron-right text-muted arrow-icon align-self-center"></i>
+                              </div>
+                           </a>
+                        </div>
+
+                        <!-- Card 6: Inventory -->
+                        <div class="col-md-6 col-12 action-card-col mb-4">
+                           <a th:href="@{/productList}" class="action-card p-4">
+                              <div class="d-flex align-items-start" style="gap: 16px;">
+                                 <div class="rounded d-flex align-items-center justify-content-center text-info" style="width: 44px; height: 44px; background-color: #E0F2FE; flex-shrink: 0; border-radius: var(--radius-sm) !important;">
+                                    <i class="fas fa-warehouse fa-lg"></i>
+                                 </div>
+                                 <div style="flex: 1;">
+                                    <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Inventory</h6>
+                                    <p class="text-muted mb-0 small" style="font-size: 12px; line-height: 1.4;">Kiểm kê số lượng hàng tồn kho của shop.</p>
+                                 </div>
+                                 <i class="fas fa-chevron-right text-muted arrow-icon align-self-center"></i>
+                              </div>
+                           </a>
+                        </div>
+                     </th:block>
+
+                     <!-- CUSTOMER (ROLE_USER) Quick Actions -->
+                     <th:block sec:authorize="hasRole('ROLE_USER')">
+                        <!-- Card 1: Address Book -->
+                        <div class="col-md-6 col-12 action-card-col mb-4">
+                           <a href="javascript:void(0)" onclick="openAddressBookModal()" class="action-card p-4">
+                              <div class="d-flex align-items-start" style="gap: 16px;">
+                                 <div class="rounded d-flex align-items-center justify-content-center text-success" style="width: 44px; height: 44px; background-color: #DCFCE7; flex-shrink: 0; border-radius: var(--radius-sm) !important;">
+                                    <i class="fas fa-map-marked-alt fa-lg"></i>
+                                 </div>
+                                 <div style="flex: 1;">
+                                    <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Sổ Địa Chỉ Giao Hàng</h6>
+                                    <p class="text-muted mb-0 small" style="font-size: 12px; line-height: 1.4;">Thêm, sửa và quản lý địa chỉ nhận hàng của bạn.</p>
+                                 </div>
+                                 <i class="fas fa-chevron-right text-muted arrow-icon align-self-center"></i>
+                              </div>
+                           </a>
+                        </div>
+
+                        <!-- Card 2: My Orders -->
+                        <div class="col-md-6 col-12 action-card-col mb-4">
+                           <a th:href="@{/admin/orderList}" class="action-card p-4">
+                              <div class="d-flex align-items-start" style="gap: 16px;">
+                                 <div class="rounded d-flex align-items-center justify-content-center text-primary" style="width: 44px; height: 44px; background-color: #EFF6FF; flex-shrink: 0; border-radius: var(--radius-sm) !important;">
+                                    <i class="fas fa-shopping-bag fa-lg"></i>
+                                 </div>
+                                 <div style="flex: 1;">
+                                    <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Lịch Sử Đơn Hàng</h6>
+                                    <p class="text-muted mb-0 small" style="font-size: 12px; line-height: 1.4;">Theo dõi tiến độ, hủy đơn hoặc yêu cầu trả hàng.</p>
+                                 </div>
+                                 <i class="fas fa-chevron-right text-muted arrow-icon align-self-center"></i>
+                              </div>
+                           </a>
+                        </div>
+
+                        <!-- Card 3: Wishlist -->
+                        <div class="col-md-6 col-12 action-card-col mb-4">
+                           <a th:href="@{/admin/accountInfo?action=wishlist}" class="action-card p-4">
+                              <div class="d-flex align-items-start" style="gap: 16px;">
+                                 <div class="rounded d-flex align-items-center justify-content-center text-danger" style="width: 44px; height: 44px; background-color: #FEE2E2; flex-shrink: 0; border-radius: var(--radius-sm) !important;">
+                                    <i class="fas fa-heart fa-lg"></i>
+                                 </div>
+                                 <div style="flex: 1;">
+                                    <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Sản Phẩm Yêu Thích</h6>
+                                    <p class="text-muted mb-0 small" style="font-size: 12px; line-height: 1.4;">Xem lại danh sách sản phẩm giày mà bạn đã thích.</p>
+                                 </div>
+                                 <i class="fas fa-chevron-right text-muted arrow-icon align-self-center"></i>
+                              </div>
+                           </a>
+                        </div>
+
+                        <!-- Card 4: Shop Now -->
+                        <div class="col-md-6 col-12 action-card-col mb-4">
+                           <a th:href="@{/productList}" class="action-card p-4">
+                              <div class="d-flex align-items-start" style="gap: 16px;">
+                                 <div class="rounded d-flex align-items-center justify-content-center text-warning" style="width: 44px; height: 44px; background-color: #FEF3C7; flex-shrink: 0; border-radius: var(--radius-sm) !important;">
+                                    <i class="fas fa-store fa-lg"></i>
+                                 </div>
+                                 <div style="flex: 1;">
+                                    <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Khám Phá Cửa Hàng</h6>
+                                    <p class="text-muted mb-0 small" style="font-size: 12px; line-height: 1.4;">Tìm kiếm các mẫu giày hot mới nhất và mua sắm.</p>
+                                 </div>
+                                 <i class="fas fa-chevron-right text-muted arrow-icon align-self-center"></i>
+                              </div>
+                           </a>
+                        </div>
+                     </th:block>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+       
+      <th:block th:include="_footer"></th:block>
+      
+      <!-- AI Inspection Modal -->
+      <div class="modal fade" id="aiInspectModal" tabindex="-1" aria-labelledby="aiInspectModalLabel" aria-hidden="true" style="font-family: var(--font-family);">
+         <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: var(--radius-lg); overflow: hidden;">
+               <div class="modal-header border-bottom bg-light px-4 py-3">
+                  <h5 class="modal-title font-weight-bold text-dark" id="aiInspectModalLabel" style="font-size: 16px;"><i class="fas fa-brain text-primary mr-2"></i>AI Image Inspection</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="outline: none;">
+                     <span aria-hidden="true">&times;</span>
+                  </button>
+               </div>
+               <div class="modal-body p-4 text-center">
+                  <div id="ai-upload-area" class="p-4 mb-3 d-flex flex-column align-items-center justify-content-center" 
+                       style="border: 2px dashed var(--color-border); border-radius: var(--radius-md); background-color: var(--color-bg); cursor: pointer; min-height: 160px; transition: all 0.2s;"
+                       onmouseover="this.style.borderColor='var(--color-primary)'; this.style.backgroundColor='#EFF6FF';"
+                       onmouseout="this.style.borderColor='var(--color-border)'; this.style.backgroundColor='var(--color-bg)';"
+                       onclick="document.getElementById('ai-file-input').click();">
+                     <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-2"></i>
+                     <p class="mb-1 font-weight-bold text-dark" style="font-size: 14px;">Kéo thả hoặc click để tải ảnh giày</p>
+                     <p class="text-muted small mb-0">Hỗ trợ JPG, PNG (Tối đa 5MB)</p>
+                     <input type="file" id="ai-file-input" accept="image/*" style="display: none;" onchange="handleAiFileSelect(this)">
+                  </div>
+                  
+                  <!-- Preview & Status section -->
+                  <div id="ai-inspect-result" class="d-none text-left p-3 mt-3 shadow-sm border" style="border-radius: var(--radius-sm); background-color: var(--color-bg); font-size: 13px;">
+                     <div class="d-flex align-items-center mb-2" id="ai-result-header">
+                        <!-- Loading or outcome -->
+                     </div>
+                     <div id="ai-result-metrics" style="line-height: 1.6;">
+                        <!-- Results data -->
+                     </div>
+                  </div>
+               </div>
+               <div class="modal-footer border-top-0 px-4 pb-4 pt-0">
+                  <button type="button" class="btn btn-secondary px-4 font-weight-bold" data-dismiss="modal" style="border-radius: var(--radius-sm); font-size: 13px;">Đóng</button>
+                  <button type="button" id="btn-run-ai" class="btn btn-primary px-4 font-weight-bold d-none" onclick="submitImageToAi()" style="border-radius: var(--radius-sm); font-size: 13px;">Bắt đầu phân tích</button>
+               </div>
+            </div>
+         </div>
+      </div>
+      
+      <script>
+         document.getElementById('current-date-span-hero').innerText = new Date().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+         
+         let selectedAiFile = null;
+         
+         function handleAiFileSelect(input) {
+            if (input.files && input.files[0]) {
+               selectedAiFile = input.files[0];
+               const uploadArea = document.getElementById('ai-upload-area');
+               const resultDiv = document.getElementById('ai-inspect-result');
+               const btnRun = document.getElementById('btn-run-ai');
+               
+               uploadArea.innerHTML = `
+                  <i class="fas fa-file-image fa-3x text-primary mb-2"></i>
+                  <p class="mb-1 font-weight-bold text-primary" style="font-size: 14px;">${selectedAiFile.name}</p>
+                  <p class="text-muted small mb-0">${(selectedAiFile.size / 1024 / 1024).toFixed(2)} MB</p>
+               `;
+               
+               resultDiv.classList.add('d-none');
+               btnRun.classList.remove('d-none');
+            }
+         }
+         
+         async function submitImageToAi() {
+            if (!selectedAiFile) return;
+            
+            const btnRun = document.getElementById('btn-run-ai');
+            const resultDiv = document.getElementById('ai-inspect-result');
+            const header = document.getElementById('ai-result-header');
+            const metrics = document.getElementById('ai-result-metrics');
+            
+            btnRun.disabled = true;
+            btnRun.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Đang phân tích...';
+            resultDiv.classList.remove('d-none');
+            
+            header.innerHTML = `
+               <div class="spinner-border spinner-border-sm text-primary mr-2" role="status"></div>
+               <span class="font-weight-bold text-primary">Mô hình AI đang quét ảnh giày...</span>
+            `;
+            metrics.innerHTML = '';
+            
+            try {
+               const formData = new FormData();
+               formData.append('file', selectedAiFile);
+               
+               // Call FastAPI directly
+               const response = await fetch('http://localhost:8000/api/v1/analyze', {
+                  method: 'POST',
+                  body: formData
+               });
+               
+               if (!response.ok) throw new Error('Không thể kết nối dịch vụ AI');
+               
+               const data = await response.json();
+               
+               if (data.status === 'REJECTED') {
+                  header.innerHTML = `
+                     <i class="fas fa-times-circle text-danger mr-2 fa-lg"></i>
+                     <span class="font-weight-bold text-danger">BỊ TỪ CHỐI (REJECTED)</span>
+                  `;
+                  metrics.innerHTML = `
+                     <div class="mb-1 text-muted"><strong>Lý do:</strong> ${data.reason}</div>
+                     <div class="mb-1 text-muted"><strong>Chỉ số mờ ảnh (Blur Score):</strong> ${data.metrics.blur_score}</div>
+                     <div class="mb-0 text-muted"><strong>Tỷ lệ vật thể (Object Ratio):</strong> ${data.metrics.object_ratio}</div>
+                  `;
+               } else {
+                  header.innerHTML = `
+                     <i class="fas fa-check-circle text-success mr-2 fa-lg"></i>
+                     <span class="font-weight-bold text-success">ĐẠT CHUẨN (PASSED)</span>
+                  `;
+                  metrics.innerHTML = `
+                     <div class="text-muted">Ảnh đạt chuẩn chất lượng cho cửa hàng trực tuyến.</div>
+                  `;
+               }
+            } catch (error) {
+               header.innerHTML = `
+                  <i class="fas fa-exclamation-triangle text-warning mr-2 fa-lg"></i>
+                  <span class="font-weight-bold text-warning">Lỗi dịch vụ</span>
+               `;
+               metrics.innerHTML = `<div class="text-muted">${error.message}. Vui lòng thử lại sau.</div>`;
+            } finally {
+               btnRun.disabled = false;
+               btnRun.innerHTML = 'Bắt đầu phân tích';
+            }
+         }
+      </script>
+
+      <!-- ================================================================
+           SKELETON LOADING ROW (KPI section)
+      ================================================================ -->
+      <div id="skeleton-kpi-row" class="row mb-2" style="gap: 0;" aria-hidden="true">
+         <div class="col-lg-3 col-md-6 col-12 mb-4" style="padding: 0 12px;">
+            <div class="sk-card">
+               <div class="d-flex justify-content-between mb-3">
+                  <span class="sk-box" style="width: 80px; height: 10px;"></span>
+                  <span class="sk-box" style="width: 40px; height: 40px; border-radius: 50%;"></span>
+               </div>
+               <span class="sk-box" style="width: 110px; height: 26px; margin-bottom: 8px;"></span>
+               <span class="sk-box" style="width: 70px; height: 10px;"></span>
+            </div>
+         </div>
+         <div class="col-lg-3 col-md-6 col-12 mb-4" style="padding: 0 12px;">
+            <div class="sk-card">
+               <div class="d-flex justify-content-between mb-3">
+                  <span class="sk-box" style="width: 80px; height: 10px;"></span>
+                  <span class="sk-box" style="width: 40px; height: 40px; border-radius: 50%;"></span>
+               </div>
+               <span class="sk-box" style="width: 90px; height: 26px; margin-bottom: 8px;"></span>
+               <span class="sk-box" style="width: 60px; height: 10px;"></span>
+            </div>
+         </div>
+         <div class="col-lg-3 col-md-6 col-12 mb-4" style="padding: 0 12px;">
+            <div class="sk-card">
+               <div class="d-flex justify-content-between mb-3">
+                  <span class="sk-box" style="width: 80px; height: 10px;"></span>
+                  <span class="sk-box" style="width: 40px; height: 40px; border-radius: 50%;"></span>
+               </div>
+               <span class="sk-box" style="width: 60px; height: 26px; margin-bottom: 8px;"></span>
+               <span class="sk-box" style="width: 75px; height: 10px;"></span>
+            </div>
+         </div>
+         <div class="col-lg-3 col-md-6 col-12 mb-4" style="padding: 0 12px;">
+            <div class="sk-card">
+               <div class="d-flex justify-content-between mb-3">
+                  <span class="sk-box" style="width: 80px; height: 10px;"></span>
+                  <span class="sk-box" style="width: 40px; height: 40px; border-radius: 50%;"></span>
+               </div>
+               <span class="sk-box" style="width: 50px; height: 26px; margin-bottom: 8px;"></span>
+               <span class="sk-box" style="width: 85px; height: 10px;"></span>
+            </div>
+         </div>
+      </div>
+
+      <!-- ================================================================
+           SKELETON CHART CARD
+      ================================================================ -->
+      <div id="skeleton-chart" class="dashboard-card p-4 mb-4" aria-hidden="true" style="margin-bottom: 16px;">
+         <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+               <span class="sk-box" style="width: 160px; height: 14px; margin-bottom: 8px;"></span>
+               <span class="sk-box" style="width: 220px; height: 10px;"></span>
+            </div>
+            <span class="sk-box" style="width: 120px; height: 30px; border-radius: 8px;"></span>
+         </div>
+         <div class="d-flex" style="gap: 24px; margin-bottom: 20px;">
+            <div><span class="sk-box" style="width: 60px; height: 10px; margin-bottom: 6px;"></span><span class="sk-box" style="width: 100px; height: 22px;"></span></div>
+            <div><span class="sk-box" style="width: 60px; height: 10px; margin-bottom: 6px;"></span><span class="sk-box" style="width: 50px; height: 22px;"></span></div>
+            <div><span class="sk-box" style="width: 60px; height: 10px; margin-bottom: 6px;"></span><span class="sk-box" style="width: 70px; height: 22px;"></span></div>
+         </div>
+         <span class="sk-box" style="width: 100%; height: 160px; border-radius: 10px;"></span>
+      </div>
+
+      <!-- ================================================================
+           EMPTY STATES (injected by JS when data count = 0)
+      ================================================================ -->
+
+      <!-- Orders empty state template -->
+      <template id="tpl-empty-orders">
+         <div class="empty-state show" id="empty-orders">
+            <div class="empty-icon" style="background: #F0F9FF; color: #0EA5E9;">
+               <i class="fas fa-receipt fa-lg"></i>
+            </div>
+            <h6>Chưa có đơn hàng nào</h6>
+            <p>Hệ thống chưa ghi nhận bất kỳ đơn đặt hàng nào. Đơn hàng mới sẽ xuất hiện tại đây.</p>
+         </div>
+      </template>
+
+      <!-- Products empty state template -->
+      <template id="tpl-empty-products">
+         <div class="empty-state show" id="empty-products">
+            <div class="empty-icon" style="background: #FFF7ED; color: #F97316;">
+               <i class="fas fa-box-open fa-lg"></i>
+            </div>
+            <h6>Danh mục trống</h6>
+            <p>Chưa có sản phẩm nào được đăng bán. Hãy thêm sản phẩm đầu tiên của bạn.</p>
+         </div>
+      </template>
+
+      <!-- Activity empty state template -->
+      <template id="tpl-empty-activity">
+         <div class="empty-state show" id="empty-activity">
+            <div class="empty-icon" style="background: #F0FDF4; color: #22C55E;">
+               <i class="fas fa-history fa-lg"></i>
+            </div>
+            <h6>Không có hoạt động nào</h6>
+            <p>Khi có thao tác mới (thêm sản phẩm, đơn hàng...), chúng sẽ hiển thị tại đây.</p>
+         </div>
+      </template>
+
+      <!-- Chart no-data empty state template -->
+      <template id="tpl-empty-chart">
+         <div class="empty-state show" id="empty-chart">
+            <div class="empty-icon" style="background: #EFF6FF; color: #3B82F6;">
+               <i class="fas fa-chart-line fa-lg"></i>
+            </div>
+            <h6>Chưa có dữ liệu biểu đồ</h6>
+            <p>Dữ liệu doanh thu sẽ được hiển thị tại đây sau khi có đơn hàng đầu tiên.</p>
+         </div>
+      </template>
+
+      <script>
+         /* ── Skeleton loading orchestration ── */
+         (function () {
+            var LOADING_MS = 1300;
+
+            // Mark body as loading instantly (before DOMContentLoaded)
+            document.body.classList.add('page-loading');
+
+            // Move skeleton rows into the correct position in the DOM
+            document.addEventListener('DOMContentLoaded', function () {
+               var kpiRow = document.getElementById('live-kpi-row');
+               var chartCard = document.getElementById('live-chart-card');
+               var skKpi  = document.getElementById('skeleton-kpi-row');
+               var skChart = document.getElementById('skeleton-chart');
+
+               // Inject skeleton KPI row right before the real KPI row
+               if (kpiRow && skKpi) {
+                  kpiRow.parentNode.insertBefore(skKpi, kpiRow);
+               }
+               // Inject skeleton chart right before the real chart card
+               if (chartCard && skChart) {
+                  chartCard.parentNode.insertBefore(skChart, chartCard);
+               }
+
+               // After LOADING_MS, remove loading state with fade
+               setTimeout(function () {
+                  // Fade out skeletons
+                  [skKpi, skChart].forEach(function (el) {
+                     if (!el) return;
+                     el.style.transition = 'opacity 0.4s ease-out';
+                     el.style.opacity = '0';
+                  });
+                  // Remove page-loading class (reveals real content)
+                  document.body.classList.remove('page-loading');
+                  // Hide skeleton elements after fade
+                  setTimeout(function () {
+                     if (skKpi)   { skKpi.style.display   = 'none'; }
+                     if (skChart) { skChart.style.display = 'none'; }
+                  }, 450);
+               }, LOADING_MS);
+
+               /* ── Empty State detection ── */
+               checkEmptyStates();
+
+               var urlParams = new URLSearchParams(window.location.search);
+               if (urlParams.get('action') === 'voucher') {
+                  openVoucherAdminModal();
+               }
+            });
+
+            function checkEmptyStates() {
+               // Orders table
+               var orderRows = document.querySelectorAll('#orders-tbody tr');
+               if (orderRows.length === 0) {
+                  injectTemplate('tpl-empty-orders', 'orders-table-wrapper');
+               }
+
+               // KPI: Products value
+               var productVal = document.querySelector('#kpi-products-val');
+               if (productVal && parseInt(productVal.textContent.trim()) === 0) {
+                  injectTemplate('tpl-empty-products', 'kpi-products-empty');
+               }
+
+               // Activity timeline
+               var activityItems = document.querySelectorAll('.timeline-item');
+               if (activityItems.length === 0) {
+                  injectTemplate('tpl-empty-activity', 'timeline-wrapper');
+               }
+
+               // Chart: revenue = 0
+               var revenueVal = document.querySelector('#chart-revenue-val');
+               if (revenueVal && parseFloat(revenueVal.textContent.replace(/[^0-9.]/g, '')) === 0) {
+                  injectTemplate('tpl-empty-chart', 'chart-area-wrapper');
+               }
+            }
+
+            function injectTemplate(templateId, targetId) {
+               var tpl = document.getElementById(templateId);
+               var target = document.getElementById(targetId);
+               if (tpl && target) {
+                  var clone = tpl.content.cloneNode(true);
+                  target.innerHTML = '';
+                  target.appendChild(clone);
+               }
+            }
+         }());
+      </script>
+       <!-- ========================================== -->
+       <!-- VOUCHER ADMIN MANAGEMENT MODAL -->
+       <!-- ========================================== -->
+       <div class="modal fade" id="voucherAdminModal" tabindex="-1" role="dialog" aria-hidden="true">
+          <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+             <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                
+                <!-- Modal Header -->
+                <div class="modal-header bg-primary text-white p-3 px-4 align-items-center" style="background: var(--hero-gradient) !important;">
+                   <h5 class="modal-title font-weight-bold text-white mb-0" style="font-size: 17px;">
+                      <i class="fas fa-ticket-alt mr-2"></i> Quản Lý Mã Giảm Giá & Voucher
+                   </h5>
+                   <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" style="outline: none;">
+                      <span aria-hidden="true">&times;</span>
+                   </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body p-4 bg-light">
+                   <ul class="nav nav-pills mb-3" id="voucherTab" role="tablist">
+                      <li class="nav-item">
+                         <a class="nav-link active font-weight-bold" id="vouchers-list-tab" data-toggle="pill" href="#vouchers-list" role="tab"><i class="fas fa-list mr-1"></i> Danh Sách Voucher</a>
+                      </li>
+                      <li class="nav-item">
+                         <a class="nav-link font-weight-bold" id="voucher-create-tab" data-toggle="pill" href="#voucher-create" role="tab"><i class="fas fa-plus-circle mr-1"></i> + Tạo Mã Mới</a>
+                      </li>
+                   </ul>
+
+                   <div class="tab-content" id="voucherTabContent">
+                      
+                      <!-- TAB 1: LIST -->
+                      <div class="tab-pane fade show active" id="vouchers-list" role="tabpanel">
+                         <div class="table-responsive bg-white rounded shadow-sm p-2">
+                            <table class="table table-hover align-middle mb-0" style="font-size: 13px;">
+                               <thead class="thead-light">
+                                  <tr>
+                                     <th>Mã Voucher</th>
+                                     <th>Loại / Mức giảm</th>
+                                     <th>Đơn tối thiểu</th>
+                                     <th>Lượt dùng</th>
+                                     <th>Trạng thái</th>
+                                     <th class="text-right">Hành động</th>
+                                  </tr>
+                               </thead>
+                               <tbody id="voucher-table-body">
+                                  <tr>
+                                     <td colspan="6" class="text-center py-4 text-muted">Đang tải danh sách...</td>
+                                  </tr>
+                               </tbody>
+                            </table>
+                         </div>
+                      </div>
+
+                      <!-- TAB 2: CREATE -->
+                      <div class="tab-pane fade" id="voucher-create" role="tabpanel">
+                         <div class="card border-0 shadow-sm p-4" style="border-radius: 12px;">
+                            <form id="createVoucherForm" onsubmit="submitCreateVoucher(event)">
+                               <div class="row">
+                                  <div class="col-md-6 mb-3">
+                                     <label class="font-weight-bold small text-dark">Mã giảm giá (Code) <span class="text-danger">*</span></label>
+                                     <input type="text" id="v-code" class="form-control" placeholder="vd: SUMMER100" required style="text-transform: uppercase;">
+                                  </div>
+                                  <div class="col-md-6 mb-3">
+                                     <label class="font-weight-bold small text-dark">Loại giảm giá <span class="text-danger">*</span></label>
+                                     <select id="v-type" class="form-control" onchange="toggleMaxDiscountField()">
+                                        <option value="PERCENT">Phần trăm (%)</option>
+                                        <option value="FIXED">Số tiền cố định (K VNĐ)</option>
+                                     </select>
+                                  </div>
+                                  <div class="col-md-6 mb-3">
+                                     <label class="font-weight-bold small text-dark">Mức giảm (Value) <span class="text-danger">*</span></label>
+                                     <input type="number" step="0.1" id="v-value" class="form-control" placeholder="vd: 20 (% hoặc K)" required>
+                                  </div>
+                                  <div class="col-md-6 mb-3" id="v-max-discount-group">
+                                     <label class="font-weight-bold small text-dark">Mức giảm tối đa (K VNĐ)</label>
+                                     <input type="number" step="0.1" id="v-max-discount" class="form-control" placeholder="vd: 100 (để trống nếu không giới hạn)">
+                                  </div>
+                                  <div class="col-md-6 mb-3">
+                                     <label class="font-weight-bold small text-dark">Đơn hàng tối thiểu (K VNĐ) <span class="text-danger">*</span></label>
+                                     <input type="number" step="0.1" id="v-min-order" class="form-control" value="0" required>
+                                  </div>
+                                  <div class="col-md-6 mb-3">
+                                     <label class="font-weight-bold small text-dark">Hạn sử dụng</label>
+                                     <input type="date" id="v-expiry" class="form-control">
+                                  </div>
+                                  <div class="col-md-6 mb-3">
+                                     <label class="font-weight-bold small text-dark">Tổng số lượt dùng</label>
+                                     <input type="number" id="v-usage-limit" class="form-control" value="100" required>
+                                  </div>
+                                  <div class="col-md-6 mb-3">
+                                     <label class="font-weight-bold small text-dark">Lượt dùng / Mỗi khách hàng</label>
+                                     <input type="number" id="v-per-user" class="form-control" value="1" required>
+                                  </div>
+                               </div>
+                               <button type="submit" class="btn btn-primary font-weight-bold px-4 py-2" style="border-radius: 8px;">
+                                  <i class="fas fa-save mr-1"></i> Lưu & Kích Hoạt Voucher
+                               </button>
+                            </form>
+                         </div>
+                      </div>
+
+                   </div>
+                </div>
+
+             </div>
+          </div>
+       </div>
+
+       <script>
+          function openVoucherAdminModal() {
+             $('#voucherAdminModal').modal('show');
+             loadVouchersListAdmin();
+          }
+
+          function toggleMaxDiscountField() {
+             var type = document.getElementById('v-type').value;
+             var group = document.getElementById('v-max-discount-group');
+             if (group) {
+                group.style.display = (type === 'PERCENT') ? 'block' : 'none';
+             }
+          }
+
+          function loadVouchersListAdmin() {
+             fetch('/api/v1/admin/vouchers')
+                .then(res => res.json())
+                .then(vouchers => {
+                   var tbody = document.getElementById('voucher-table-body');
+                   if (!tbody) return;
+                   if (!Array.isArray(vouchers) || vouchers.length === 0) {
+                      tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Chưa có mã giảm giá nào. Hãy bấm "+ Tạo Mã Mới"!</td></tr>';
+                      return;
+                   }
+                   var html = '';
+                   vouchers.forEach(v => {
+                      var valStr = (v.discountType === 'PERCENT') ? (v.discountValue + '%') : (v.discountValue + 'K ₫');
+                      if (v.discountType === 'PERCENT' && v.maxDiscount) {
+                         valStr += ' (Tối đa ' + v.maxDiscount + 'K)';
+                      }
+                      var activeBadge = v.active 
+                         ? '<span class="badge badge-success px-2 py-1">Hoạt động</span>'
+                         : '<span class="badge badge-secondary px-2 py-1">Vô hiệu</span>';
+                      
+                      html += `
+                         <tr>
+                            <td class="font-weight-bold text-primary">${v.code}</td>
+                            <td class="font-weight-bold">${valStr}</td>
+                            <td>${v.minOrderValue ? v.minOrderValue + 'K ₫' : '0 ₫'}</td>
+                            <td>${v.usedCount} / ${v.usageLimit}</td>
+                            <td>${activeBadge}</td>
+                            <td class="text-right">
+                               ${v.active ? `<button class="btn btn-sm btn-outline-danger font-weight-bold" onclick="deactivateVoucher('${v.code}')"><i class="fas fa-ban"></i> Tắt</button>` : '<span class="text-muted small">Đã tắt</span>'}
+                            </td>
+                         </tr>
+                      `;
+                   });
+                   tbody.innerHTML = html;
+                }).catch(err => {
+                   var tbody = document.getElementById('voucher-table-body');
+                   if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-danger">Lỗi tải danh sách voucher!</td></tr>';
+                });
+          }
+
+          function submitCreateVoucher(event) {
+             event.preventDefault();
+             var code = document.getElementById('v-code').value.trim();
+             var type = document.getElementById('v-type').value;
+             var value = parseFloat(document.getElementById('v-value').value);
+             var maxDisc = document.getElementById('v-max-discount').value ? parseFloat(document.getElementById('v-max-discount').value) : null;
+             var minOrder = parseFloat(document.getElementById('v-min-order').value || 0);
+             var expiry = document.getElementById('v-expiry').value ? new Date(document.getElementById('v-expiry').value) : null;
+             var usageLimit = parseInt(document.getElementById('v-usage-limit').value || 100);
+             var perUser = parseInt(document.getElementById('v-per-user').value || 1);
+
+             var payload = {
+                code: code,
+                discountType: type,
+                discountValue: value,
+                maxDiscount: maxDisc,
+                minOrderValue: minOrder,
+                expiryDate: expiry,
+                active: true,
+                usageLimit: usageLimit,
+                perUserLimit: perUser
+             };
+
+             fetch('/api/v1/admin/vouchers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+             })
+             .then(res => res.json())
+             .then(data => {
+                if (data.success) {
+                   alert(data.message);
+                   document.getElementById('createVoucherForm').reset();
+                   $('#vouchers-list-tab').tab('show');
+                   loadVouchersListAdmin();
+                } else {
+                   alert(data.message || 'Lỗi tạo voucher!');
+                }
+             })
+             .catch(err => alert('Không thể kết nối máy chủ!'));
+          }
+
+          function deactivateVoucher(code) {
+             if (!confirm('Bạn có chắc chắn muốn vô hiệu hóa mã giảm giá "' + code + '"?')) return;
+             fetch('/api/v1/admin/vouchers/' + code, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                   if (data.success) {
+                      loadVouchersListAdmin();
+                   } else {
+                      alert(data.message);
+                   }
+                });
+          }
+          // Auto fetch address count for customer KPI card
+          window.addEventListener('DOMContentLoaded', () => {
+             fetch('/api/v1/users/addresses')
+                .then(res => res.ok ? res.json() : [])
+                .then(addrs => {
+                   var kpiVal = document.getElementById('user-address-kpi-val');
+                   if (kpiVal && Array.isArray(addrs)) {
+                      kpiVal.innerText = addrs.length;
+                   }
+                }).catch(err => {});
+          });
+       </script>
+    </body>
+ </html>

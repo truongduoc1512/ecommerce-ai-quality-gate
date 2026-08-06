@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>ShoeShop — Đăng nhập</title>
+      <link rel="stylesheet" type="text/css" th:href="@{/style.css}" />
+      <th:block th:include="_header"></th:block>
+      <style type="text/css">
+         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+         /* ----------------------------------------------------------
+            Design Tokens
+         ---------------------------------------------------------- */
+         :root {
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-size-xs:   12px;
+            --font-size-sm:   13.5px;
+            --font-size-base: 15px;
+            --font-size-md:   17px;
+            --font-size-lg:   20px;
+            --font-size-xl:   24px;
+
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+
+            --color-bg:             #F8FAFC;
+            --color-card:           #FFFFFF;
+            --color-primary:        #2563EB;
+            --color-primary-hover:  #1D4ED8;
+            --color-primary-light:  #EFF6FF;
+            --color-success:        #16A34A;
+            --color-success-light:  #ECFDF5;
+            --color-danger:         #DC2626;
+            --color-danger-light:   #FEF2F2;
+            --color-warning:        #F59E0B;
+            --color-warning-light:  #FEF3C7;
+            --color-border:         #E2E8F0;
+            --color-text:           #0F172A;
+            --color-text-secondary: #475569;
+            --color-text-muted:     #94A3B8;
+
+            --shadow-soft:   0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.02);
+            --shadow-md:     0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+            --shadow-lg:     0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -2px rgba(0,0,0,0.02);
+
+            --transition: 200ms ease-in-out;
+         }
+
+         body {
+            background-color: var(--color-bg);
+            font-family: var(--font-family);
+            color: var(--color-text);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+         }
+
+         h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-family) !important;
+         }
+
+         .login-page-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 16px;
+         }
+
+         .login-card {
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 40px;
+            width: 100%;
+            max-width: 440px;
+         }
+
+         .login-header {
+            text-align: center;
+            margin-bottom: 32px;
+         }
+
+         .brand-logo-wrapper {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background-color: var(--color-primary-light);
+            color: var(--color-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin: 0 auto 16px auto;
+            box-shadow: var(--shadow-soft);
+         }
+
+         .login-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--color-text);
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+         }
+
+         .login-subtitle {
+            font-size: var(--font-size-sm);
+            color: var(--color-text-secondary);
+            margin: 0;
+         }
+
+         /* Form Styling */
+         .login-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+         }
+
+         .form-item {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+         }
+
+         .form-label {
+            font-size: var(--font-size-xs);
+            font-weight: 700;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+         }
+
+         .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+         }
+
+         .input-icon {
+            position: absolute;
+            left: 14px;
+            color: var(--color-text-muted);
+            font-size: var(--font-size-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+         }
+
+         .form-input {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            background-color: #F8FAFC;
+            border: 1.5px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-family: var(--font-family);
+            font-size: var(--font-size-sm);
+            color: var(--color-text);
+            outline: none;
+            transition: var(--transition);
+         }
+
+         .form-input:focus {
+            background-color: var(--color-card);
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+         }
+
+         .toggle-password-btn {
+            position: absolute;
+            right: 14px;
+            color: var(--color-text-muted);
+            font-size: var(--font-size-sm);
+            cursor: pointer;
+            transition: var(--transition);
+         }
+         .toggle-password-btn:hover {
+            color: var(--color-text-secondary);
+         }
+
+         /* Options Row */
+         .options-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: var(--font-size-sm);
+            margin-top: 4px;
+         }
+
+         .remember-me-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            user-select: none;
+            margin: 0;
+         }
+         .remember-me-label input {
+            cursor: pointer;
+            accent-color: var(--color-primary);
+            width: 16px;
+            height: 16px;
+         }
+
+         .forgot-password-link {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+         }
+         .forgot-password-link:hover {
+            color: var(--color-primary-hover);
+            text-decoration: underline;
+         }
+
+         /* Login Button */
+         .btn-login-submit {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 14px;
+            background-color: var(--color-primary);
+            color: #ffffff;
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: var(--font-family);
+            font-size: var(--font-size-base);
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-soft);
+            margin-top: 8px;
+         }
+         .btn-login-submit:hover {
+            background-color: var(--color-primary-hover);
+            box-shadow: var(--shadow-md);
+         }
+
+         /* Error alerts */
+         .alert-danger {
+            background-color: var(--color-danger-light);
+            color: var(--color-danger);
+            border: 1px solid rgba(220, 38, 38, 0.1);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            font-size: var(--font-size-sm);
+            font-weight: 500;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            text-align: left;
+         }
+         .alert-danger i {
+            margin-top: 3px;
+         }
+
+         /* Footer texts inside card */
+         .card-footer-agreement {
+            font-size: var(--font-size-xs);
+            color: var(--color-text-secondary);
+            text-align: center;
+            margin-top: 24px;
+            line-height: 1.5;
+         }
+         .card-footer-agreement a {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 600;
+         }
+         .card-footer-agreement a:hover {
+            text-decoration: underline;
+         }
+      </style>
+   </head>
+   <body>
+      
+      <th:block th:include="_menu"></th:block>
+      
+      <div class="login-page-container">
+         <div class="login-card">
+            
+            <div class="login-header">
+               <div class="brand-logo-wrapper">
+                  <i class="fas fa-user-shield"></i>
+               </div>
+               <h2 class="login-title">Đăng nhập Hệ thống</h2>
+               <p class="login-subtitle">Chào mừng bạn trở lại với ShoeShop</p>
+            </div>
+
+            <!-- Success message alert -->
+            <div th:if="${message != null}" style="background:#ECFDF5; border:1px solid #A7F3D0; color:#047857; padding:12px 16px; border-radius:12px; font-size:14px; margin-bottom:20px; font-weight:600;">
+               <i class="fas fa-check-circle"></i> <span th:utext="${message}"></span>
+            </div>
+
+            <!-- Login Failed Error Alerts -->
+            <th:block th:if="${#session != null && #session.getAttribute('SPRING_SECURITY_LAST_EXCEPTION') != null}">
+               <div th:if="${#request.getParameter('error') == 'true'}" class="alert-danger">
+                  <i class="fas fa-exclamation-circle"></i>
+                  <div>
+                     <strong>Đăng nhập thất bại!</strong><br />
+                     Chi tiết: <span th:utext="${#session.getAttribute('SPRING_SECURITY_LAST_EXCEPTION').message}"></span>
+                  </div>
+               </div>
+            </th:block>
+
+            <span class="error-message" th:utext="${error}"></span>
+
+            <!-- Google OAuth2 Quick Login Button -->
+            <a th:href="@{/oauth2/authorization/google}" style="
+               display: flex;
+               align-items: center;
+               justify-content: center;
+               gap: 12px;
+               width: 100%;
+               padding: 12px;
+               background-color: #FFFFFF;
+               border: 1.5px solid #E2E8F0;
+               border-radius: 12px;
+               color: #0F172A;
+               font-family: var(--font-family);
+               font-size: 14px;
+               font-weight: 700;
+               text-decoration: none;
+               transition: var(--transition);
+               box-shadow: var(--shadow-soft);
+               margin-bottom: 20px;
+            " onmouseover="this.style.backgroundColor='#F8FAFC'; this.style.borderColor='#CBD5E1';" onmouseout="this.style.backgroundColor='#FFFFFF'; this.style.borderColor='#E2E8F0';">
+               <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.1.83-.64 2.08-1.84 2.92l2.84 2.2c1.7-1.57 2.68-3.88 2.68-6.62z" fill="#4285F4"/>
+                  <path d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.84-2.2c-.76.53-1.78.9-3.12.9-2.38 0-4.41-1.57-5.13-3.74L.97 13.01C2.45 15.98 5.48 18 9 18z" fill="#34A853"/>
+                  <path d="M3.87 10.78A5.54 5.54 0 013.57 9c0-.62.11-1.22.3-1.78L.97 4.96A9.008 9.008 0 000 9c0 1.45.35 2.82.97 4.04l2.9-2.26z" fill="#FBBC05"/>
+                  <path d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.59C13.46.89 11.43 0 9 0 5.48 0 2.45 2.02.97 4.96l2.9 2.26C4.59 5.05 6.62 3.58 9 3.58z" fill="#EA4335"/>
+               </svg>
+               Đăng nhập bằng Google
+            </a>
+
+            <!-- Divider -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px; color: #94A3B8; font-size: 12px; font-weight: 700; text-transform: uppercase;">
+               <div style="flex: 1; height: 1px; background-color: #E2E8F0;"></div>
+               <span>Hoặc tài khoản ShoeShop</span>
+               <div style="flex: 1; height: 1px; background-color: #E2E8F0;"></div>
+            </div>
+
+            <form method="POST" th:action="@{/j_spring_security_check}" class="login-form">
+               <!-- Username -->
+               <div class="form-item">
+                  <label class="form-label">Tài khoản</label>
+                  <div class="input-wrapper">
+                     <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                     <input type="text" name="userName" placeholder="Nhập tài khoản đăng nhập..." class="form-input" required />
+                  </div>
+               </div>
+
+               <!-- Password -->
+               <div class="form-item">
+                  <label class="form-label">Mật khẩu</label>
+                  <div class="input-wrapper">
+                     <span class="input-icon"><i class="fas fa-lock"></i></span>
+                     <input type="password" name="password" id="login-password-input" placeholder="Nhập mật khẩu..." class="form-input" required />
+                     <i class="fas fa-eye toggle-password-btn" id="toggle-password-visibility"></i>
+                  </div>
+               </div>
+
+               <!-- Options -->
+               <div class="options-row">
+                  <label class="remember-me-label" for="remember-me-checkbox">
+                     <input type="checkbox" id="remember-me-checkbox" name="remember-me" />
+                     <span>Duy trì đăng nhập</span>
+                  </label>
+                  <a th:href="@{/forgotPassword}" class="forgot-password-link">Quên mật khẩu?</a>
+               </div>
+
+               <!-- Submit Button -->
+               <button type="submit" class="btn-login-submit">
+                  Đăng nhập <i class="fas fa-arrow-right"></i>
+               </button>
+            </form>
+
+            <div style="text-align: center; margin-top: 24px; font-size: 14px; color: var(--color-text-secondary);">
+               Chưa có tài khoản? <a th:href="@{/register}" style="color: var(--color-primary); font-weight: 700; text-decoration: none;">Đăng ký ngay</a>
+            </div>
+
+            <div class="card-footer-agreement">
+               Bằng việc đăng nhập, bạn đồng ý với <a href="#">Điều khoản sử dụng</a>, <a href="#">Chính sách bảo mật</a> và <a href="#">Quy tắc Creators Club</a> của ShoeShop.
+            </div>
+
+         </div>
+      </div>
+      
+      <th:block th:include="_footer"></th:block>
+
+      <!-- UX Script: Toggle Password visibility -->
+      <script>
+         document.getElementById('toggle-password-visibility').addEventListener('click', function() {
+            const passwordInput = document.getElementById('login-password-input');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            this.classList.toggle('fa-eye');
+            this.classList.toggle('fa-eye-slash');
+         });
+      </script>
+   </body>
+</html>

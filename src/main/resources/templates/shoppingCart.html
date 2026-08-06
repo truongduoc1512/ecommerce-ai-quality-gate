@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+   <head>
+      <meta charset="UTF-8">
+      <title>Giỏ hàng - Shoe Shop Online</title>
+      <link rel="stylesheet" type="text/css" th:href="@{/style.css}" />
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+      <th:block th:include="_header"></th:block>
+      <style>
+         :root {
+            /* Typography */
+            --font-family: 'Inter', sans-serif;
+            --font-size-heading: 1.5rem; /* 24px */
+            --font-size-subheading: 1.125rem; /* 18px */
+            --font-size-body: 0.9375rem; /* 15px */
+            --font-size-button: 0.875rem; /* 14px */
+            --font-size-price: 1.125rem; /* 18px */
+            --font-size-caption: 0.8125rem; /* 13px */
+            
+            /* Spacing (8px based) */
+            --spacing-1: 8px;
+            --spacing-2: 16px;
+            --spacing-3: 24px;
+            --spacing-4: 32px;
+            --spacing-5: 40px;
+            --spacing-6: 48px;
+            
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            
+            /* Colors */
+            --color-bg: #F8FAFC;
+            --color-card: #FFFFFF;
+            --color-primary: #2563EB;
+            --color-success: #16A34A;
+            --color-danger: #DC2626;
+            --color-warning: #F59E0B;
+            --color-border: #E5E7EB;
+            --color-text: #111827;
+            --color-text-secondary: #6B7280;
+            
+            /* Shadows */
+            --shadow-soft: 0 4px 12px rgba(17, 24, 39, 0.05);
+         }
+
+         body {
+            background-color: var(--color-bg);
+            font-family: var(--font-family);
+         }
+         .cart-title {
+            font-size: var(--font-size-heading);
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-transform: uppercase;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-3);
+         }
+         /* Item cards styling */
+         .cart-item-card {
+            background: var(--color-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-3);
+            margin-bottom: var(--spacing-2);
+            transition: all 200ms ease-in-out;
+         }
+         .cart-item-card:hover {
+            box-shadow: 0 8px 24px rgba(17, 24, 39, 0.08) !important;
+            transform: translateY(-2px);
+         }
+         .product-img-wrapper {
+            overflow: hidden;
+            border-radius: var(--radius-sm);
+            width: 150px;
+            min-width: 150px;
+            height: 150px;
+            border: 1px solid var(--color-border);
+         }
+         .product-img-wrapper img {
+            transition: transform 200ms ease-in-out;
+         }
+         .cart-item-card:hover .product-img-wrapper img {
+            transform: scale(1.06);
+         }
+         .product-title {
+            font-size: var(--font-size-button);
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: var(--spacing-1);
+            text-decoration: none;
+         }
+         .product-meta {
+            font-size: var(--font-size-caption);
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+         }
+         /* Focus outline styling for keyboard accessibility */
+         a:focus-visible, button:focus-visible, input:focus-visible {
+            outline: 2px solid var(--color-primary) !important;
+            outline-offset: 2px !important;
+            box-shadow: none !important;
+         }
+
+         .qty-display {
+            font-size: var(--font-size-button);
+            font-weight: 700;
+            width: 32px;
+            text-align: center;
+            user-select: none;
+            transition: opacity 0.25s ease-in-out;
+         }
+         .qty-display.loading {
+            opacity: 0.3;
+         }
+         /* Action links */
+         .action-link {
+            font-size: var(--font-size-caption);
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            margin-right: var(--spacing-2);
+            text-decoration: underline;
+            transition: color 0.2s;
+         }
+         .action-link:hover {
+            color: var(--color-danger);
+         }
+         /* Price display */
+         .item-price {
+            font-size: var(--font-size-price);
+            font-weight: 800;
+            color: var(--color-text);
+            text-align: right;
+         }
+         /* Summary card styling */
+          .summary-card {
+             background: var(--color-card);
+             border: 1px solid var(--color-border);
+             border-radius: var(--radius-lg);
+             padding: var(--spacing-3);
+             box-shadow: var(--shadow-soft);
+          }
+          @media (min-width: 992px) {
+             .summary-card {
+                position: sticky;
+                top: var(--spacing-3);
+             }
+          }
+         .summary-title {
+            font-size: var(--font-size-subheading);
+            font-weight: 800;
+            color: var(--color-text);
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: var(--spacing-1);
+            margin-bottom: var(--spacing-2);
+            text-transform: uppercase;
+         }
+         .summary-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: var(--font-size-button);
+            color: var(--color-text-secondary);
+            margin-bottom: var(--spacing-1);
+         }
+         .summary-total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: var(--font-size-subheading);
+            font-weight: 800;
+            color: var(--color-text);
+            border-top: 1px dashed var(--color-border);
+            padding-top: var(--spacing-2);
+            margin-top: var(--spacing-2);
+         }
+         .btn-checkout {
+            background-color: var(--color-primary) !important;
+            color: #fff !important;
+            height: 56px;
+            border-radius: var(--radius-sm) !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            border: none !important;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            box-shadow: none;
+         }
+         .btn-checkout:hover {
+            background-color: #1d4ed8 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2) !important;
+            color: #fff !important;
+            text-decoration: none !important;
+         }
+         .empty-state {
+            background: var(--color-card);
+            padding: var(--spacing-6) var(--spacing-2);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+         }
+         .qty-btn-custom {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--color-text);
+            border: none;
+            background: transparent;
+            padding: 0 8px;
+            outline: none !important;
+            text-decoration: none !important;
+         }
+         .qty-btn-custom:hover {
+            color: var(--color-primary) !important;
+            text-decoration: none !important;
+         }
+         .product-card-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--color-text);
+            text-transform: capitalize;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.4;
+            margin-bottom: 6px;
+            text-decoration: none !important;
+            transition: color 0.2s;
+         }
+         .product-card-title:hover {
+            color: var(--color-primary) !important;
+         }
+         .badge-stock {
+            background-color: #EBF7ED !important;
+            color: var(--color-success) !important;
+            font-size: 11px !important;
+            font-weight: 700 !important;
+            padding: 4px 10px !important;
+            border-radius: 4px !important;
+            display: inline-block;
+         }
+         .badge-brand {
+            background-color: #F3F4F6 !important;
+            color: var(--color-text-secondary) !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            padding: 3px 8px !important;
+            border-radius: 4px !important;
+            border: 1px solid var(--color-border) !important;
+            display: inline-block;
+         }
+         .btn, .btn-checkout, .qty-btn-custom, .action-link, .badge-brand, .badge-stock {
+            transition: all 200ms ease-in-out !important;
+         }
+         @keyframes skeleton-shimmer {
+            0% { opacity: 0.3; }
+            50% { opacity: 0.75; }
+            100% { opacity: 0.3; }
+         }
+         .qty-display.loading {
+            animation: skeleton-shimmer 1s infinite ease-in-out;
+         }
+      </style>
+   </head>
+   <body>
+      
+      <th:block th:include="_menu"></th:block>
+      
+      <div class="container mt-5 mb-5">
+         
+         <!-- Empty State View -->
+         <div th:if="${cartForm == null || cartForm.cartLines == null || cartForm.cartLines.empty}" class="text-center empty-state shadow-sm" style="padding: 60px var(--spacing-3);">
+            
+            <!-- Layered Premium Illustration -->
+            <div class="illustration-container d-inline-flex align-items-center justify-content-center mb-4 position-relative" style="width: 140px; height: 140px; background-color: #F1F5F9; border-radius: 50%;">
+               <i class="fas fa-shopping-cart text-muted" style="font-size: 54px; color: #9CA3AF !important;"></i>
+               <div class="position-absolute bg-primary text-white d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; border-radius: 50%; bottom: 12px; right: 12px; font-weight: bold; border: 3px solid #fff; font-size: 14px;">?</div>
+            </div>
+            
+            <h2 class="font-weight-bold text-dark mb-2" style="font-size: 24px; letter-spacing: -0.5px;">Your Cart is Empty</h2>
+            <p class="text-muted mb-4 mx-auto" style="max-width: 380px; font-size: 14.5px; line-height: 1.6;">Looks like you haven't added anything to your cart yet. Explore our curated shoe collections and find your perfect pair today!</p>
+            
+            <a th:href="@{/productList}" class="btn btn-primary px-5 py-3 font-weight-bold" 
+               style="background-color: var(--color-primary); border-radius: var(--radius-sm); border: none; font-size: 14.5px; transition: all 0.2s ease-in-out;"
+               onmouseover="this.style.backgroundColor='#1d4ed8'; this.style.transform='translateY(-1px)';" 
+               onmouseout="this.style.backgroundColor='var(--color-primary)'; this.style.transform='translateY(0)';">
+               Start Shopping <i class="fas fa-arrow-right ml-2" style="font-size: 12px;"></i>
+            </a>
+         </div>
+         
+         <!-- Active Cart View -->
+         <div th:if="${cartForm != null && cartForm.cartLines != null && !cartForm.cartLines.empty}">
+            <div class="mb-4">
+               <h1 class="font-weight-bold text-dark mb-1" style="font-size: var(--font-size-heading); letter-spacing: -0.5px; margin: 0;">Shopping Cart</h1>
+               <span id="cart-header-count" class="text-muted" style="font-size: var(--font-size-button); font-weight: 500;" 
+                     th:text="${myCart.quantityTotal == 1 ? '1 Item' : myCart.quantityTotal + ' Items'}">1 Item</span>
+            </div>
+            
+            <div class="row">
+               <!-- 1. LEFT COLUMN: Cart list -->
+               <div class="col-lg-8 mb-4">
+                  <div th:each="cartLineInfo, varStatus : ${cartForm.cartLines}" 
+                       th:id="'cart-row-' + ${cartLineInfo.productInfo.code}"
+                       class="cart-item-card shadow-sm d-flex flex-column flex-md-row align-items-stretch">
+                     
+                     <!-- 1. Large Image with Zoom effect -->
+                     <div class="product-img-wrapper bg-light">
+                        <img th:src="@{|/productImage?code=${cartLineInfo.productInfo.code}|}" 
+                             class="w-100 h-100" 
+                             style="object-fit: cover;"
+                             alt="Product Thumbnail">
+                     </div>
+                     
+                     <!-- 2. Product Information Details (Middle Section) -->
+                     <div class="ml-md-4 flex-grow-1 d-flex flex-column justify-content-between mt-3 mt-md-0">
+                        <div>
+                           <!-- Header Row: Title & Brand/Stock Badges -->
+                           <div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-2" style="gap: 8px;">
+                              <div>
+                                 <a href="#" class="product-card-title" th:utext="${cartLineInfo.productInfo.name}">Product Name</a>
+                                 
+                                 <!-- Badges Row -->
+                                 <div class="d-flex align-items-center mt-2" style="gap: 8px;">
+                                    <span class="badge-stock">Còn hàng</span>
+                                    <span class="badge-brand" th:utext="${cartLineInfo.productInfo.brand != null ? cartLineInfo.productInfo.brand : 'Originals'}">Originals</span>
+                                 </div>
+                              </div>
+                              <span class="text-muted small font-weight-bold" style="font-size: 12px;" th:utext="'Code: ' + ${cartLineInfo.productInfo.code}">Code</span>
+                           </div>
+
+                           <!-- Ratings Section -->
+                           <div class="d-flex align-items-center mb-2" style="gap: 6px;">
+                              <div class="text-warning d-flex" style="gap: 2px; font-size: 12px;">
+                                 <!-- Display stars based on rating -->
+                                 <th:block th:each="star : ${#numbers.sequence(1, 5)}">
+                                    <i th:class="${star <= (cartLineInfo.productInfo.rating != 0 ? cartLineInfo.productInfo.rating : 4) ? 'fas fa-star' : 'far fa-star'}"></i>
+                                 </th:block>
+                              </div>
+                              <span class="text-dark font-weight-bold small" th:utext="${cartLineInfo.productInfo.rating != 0 ? cartLineInfo.productInfo.rating : 4} + '.0'">4.0</span>
+                              <span class="text-muted small" th:utext="'(' + ${(cartLineInfo.productInfo.salesCount != 0 ? cartLineInfo.productInfo.salesCount : 12)} + ' Đánh giá)'">(12 Đánh giá)</span>
+                           </div>
+
+                           <!-- Color, Size & Delivery -->
+                           <div class="product-meta text-muted mb-2">
+                              <span class="mr-3">Màu sắc: <strong>Core Black</strong></span>
+                              <span>Kích cỡ: <strong>US 9.5</strong></span>
+                              <div class="mt-1" style="font-size: 13px; color: var(--color-text-secondary);"><i class="fas fa-truck mr-1 text-success"></i> Giao hàng dự kiến: <span class="text-dark font-weight-medium">2 - 3 ngày làm việc</span></div>
+                           </div>
+                        </div>
+
+                        <!-- Action Links: Save for later & Remove -->
+                        <div class="d-flex mt-2" style="gap: 16px;">
+                           <a href="#" class="action-link"><i class="far fa-bookmark mr-1"></i> Lưu lại sau</a>
+                           <a href="#" class="action-link text-danger" 
+                              th:data-code="${cartLineInfo.productInfo.code}"
+                              onclick="removeProductAjax(this, event)"><i class="far fa-trash-alt mr-1"></i> Xóa sản phẩm</a>
+                        </div>
+                     </div>
+                     
+                     <!-- 3. Pricing & Quantity controls (Right Section) -->
+                     <div class="ml-md-4 d-flex flex-row flex-md-column justify-content-between align-items-center align-items-md-end mt-3 mt-md-0" style="min-width: 160px; border-left: 1px dashed var(--color-border); padding-left: 20px;">
+                        
+                        <!-- Unit price info -->
+                        <div class="text-md-right d-none d-md-block w-100">
+                           <span class="text-muted small d-block mb-1">Đơn giá</span>
+                           <div class="d-flex flex-column align-items-md-end" style="gap: 2px;">
+                              <span class="font-weight-bold text-dark" style="font-size: 15px;" th:utext="${#numbers.formatDecimal(cartLineInfo.productInfo.price * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                              
+                              <!-- Support future discounts: Old Price & Discount Badge -->
+                              <div th:if="${cartLineInfo.productInfo.discountPercent > 0}" class="d-flex align-items-center justify-content-end" style="gap: 6px;">
+                                 <span class="text-muted small" style="text-decoration: line-through; font-size: 12px;" th:utext="${#numbers.formatDecimal(cartLineInfo.productInfo.price * 1000 * 100 / (100 - cartLineInfo.productInfo.discountPercent), 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                                 <span class="badge badge-danger px-1.5 py-0.5" style="font-size: 10px; font-weight: 700; background-color: var(--color-danger); color: #fff; border-radius: 3px;" th:utext="'-' + ${cartLineInfo.productInfo.discountPercent} + '%'">-10%</span>
+                              </div>
+                           </div>
+                        </div>
+
+                        <!-- Interactive Quantity Controller -->
+                        <div class="text-md-right">
+                           <span class="text-muted small d-block mb-1 text-left text-md-right">Số lượng</span>
+                           <div class="d-flex align-items-center border rounded px-1" style="height: 36px; background-color: var(--color-bg); border-color: var(--color-border) !important;">
+                              <button class="btn btn-link text-dark p-0 px-2 qty-btn-custom" th:data-code="${cartLineInfo.productInfo.code}" onclick="adjustQty(this, -1)" th:disabled="${cartLineInfo.quantity <= 1}" aria-label="Giảm số lượng">-</button>
+                              <span th:id="'qty-' + ${cartLineInfo.productInfo.code}" class="qty-display font-weight-bold px-2" style="font-size: 14px; min-width: 24px; width: auto;" th:utext="${cartLineInfo.quantity}">1</span>
+                              <button class="btn btn-link text-dark p-0 px-2 qty-btn-custom" th:data-code="${cartLineInfo.productInfo.code}" onclick="adjustQty(this, 1)" aria-label="Tăng số lượng">+</button>
+                           </div>
+                        </div>
+
+                        <!-- Item Subtotal Amount -->
+                        <div class="text-right">
+                           <span class="text-muted small d-block">Thành tiền</span>
+                           <div class="item-price text-primary" style="font-size: 20px; font-weight: 800; color: var(--color-primary) !important;">
+                              <span th:id="'amount-' + ${cartLineInfo.productInfo.code}" th:utext="${#numbers.formatDecimal(cartLineInfo.amount * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                           </div>
+                        </div>
+
+                     </div>
+                     
+                  </div>
+                  
+                  <!-- Bottom Navigation Link -->
+                  <div class="d-flex justify-content-between align-items-center mt-4">
+                     <a th:href="@{/productList}" class="btn btn-outline-secondary btn-sm font-weight-bold px-3 py-2" style="border-radius: 6px;"><i class="fas fa-chevron-left"></i> Tiếp tục Mua Sắm</a>
+                  </div>
+               </div>
+               
+               <!-- 2. RIGHT COLUMN: Order Summary -->
+                   <div class="col-lg-4">
+                   <div class="summary-card">
+                      <h5 class="summary-title" style="letter-spacing: -0.3px; margin-bottom: 20px; border-bottom: 1px solid var(--color-border); padding-bottom: 10px;">Tóm tắt đơn hàng</h5>
+                      
+                      <!-- Promo code Accordion -->
+                      <div class="mb-4">
+                         <a class="text-dark font-weight-bold d-flex justify-content-between align-items-center" 
+                            data-toggle="collapse" href="#promoCollapse" role="button" aria-expanded="false" aria-controls="promoCollapse"
+                            style="font-size: 13.5px; text-decoration: none; padding: 10px 14px; background-color: var(--color-bg); border-radius: var(--radius-sm); border: 1px solid var(--color-border);">
+                            <span><i class="fas fa-ticket-alt mr-2 text-primary"></i>Nhập mã khuyến mãi</span>
+                            <i class="fas fa-chevron-down text-muted small"></i>
+                         </a>
+                         <div class="collapse mt-2" id="promoCollapse">
+                            <div class="d-flex" style="gap: 8px;">
+                               <input type="text" class="form-control form-control-sm" placeholder="Mã giảm giá..." style="border-radius: var(--radius-sm); height: 38px;">
+                               <button class="btn btn-primary btn-sm px-3" style="border-radius: var(--radius-sm); font-weight: 700; height: 38px; background-color: var(--color-primary); border: none;">Áp dụng</button>
+                            </div>
+                         </div>
+                      </div>
+                      
+                      <!-- Detail Summaries -->
+                      <div class="summary-row d-flex justify-content-between mb-3" style="font-size: 14px;">
+                         <span class="text-muted">Tạm tính</span>
+                         <span id="summary-subtotal" class="text-dark font-weight-bold" th:utext="${#numbers.formatDecimal(myCart.amountTotal * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                      </div>
+                      
+                      <div class="summary-row d-flex justify-content-between mb-3" style="font-size: 14px;">
+                         <span class="text-muted">Số lượng sản phẩm</span>
+                         <span id="summary-count" class="text-dark font-weight-bold" th:utext="'[' + ${myCart.quantityTotal} + ' SẢN PHẨM]'">[0 SẢN PHẨM]</span>
+                      </div>
+
+                      <div class="summary-row d-flex justify-content-between mb-3" style="font-size: 14px;">
+                         <span class="text-muted">Phí giao hàng</span>
+                         <span class="text-success font-weight-bold">MIỄN PHÍ</span>
+                      </div>
+
+                      <!-- Voucher Promo Input Section -->
+                      <div class="mb-3 pt-2 border-top" style="border-top: 1px solid var(--color-border) !important;">
+                         <label class="font-weight-bold text-dark mb-1" style="font-size: 13px;"><i class="fas fa-ticket-alt text-primary mr-1"></i> Mã giảm giá / Voucher</label>
+                         <div class="input-group">
+                            <input type="text" id="voucher-input" class="form-control" placeholder="Nhập mã (vd: WELCOME50)" th:value="${myCart != null ? myCart.voucherCode : ''}" style="border-radius: 8px 0 0 8px; text-transform: uppercase;">
+                            <div class="input-group-append">
+                               <button type="button" class="btn btn-primary font-weight-bold px-3" onclick="applyVoucher()" style="border-radius: 0 8px 8px 0; background-color: var(--color-primary); border-color: var(--color-primary);">Áp dụng</button>
+                            </div>
+                         </div>
+                         <div id="voucher-message" class="small mt-1 font-weight-bold" style="display:none;"></div>
+                      </div>
+
+                      <div class="summary-row d-flex justify-content-between mb-3" style="font-size: 14px;">
+                         <span class="text-muted">Giảm giá sản phẩm</span>
+                         <span class="text-danger font-weight-bold">0 ₫</span>
+                      </div>
+
+                      <div class="summary-row d-flex justify-content-between mb-3" style="font-size: 14px;">
+                         <span class="text-muted">Voucher áp dụng</span>
+                         <span id="summary-voucher-discount" class="text-success font-weight-bold" th:utext="'- ' + ${#numbers.formatDecimal((myCart != null ? myCart.discountAmount : 0) * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                      </div>
+
+                      <div class="summary-row d-flex justify-content-between mb-3" style="font-size: 14px;">
+                         <span class="text-muted">Thuế (VAT)</span>
+                         <span class="text-dark font-weight-bold">0 ₫</span>
+                      </div>
+                      
+                      <!-- Grand total -->
+                      <div class="summary-total-row d-flex justify-content-between pt-3" style="font-size: 18px; font-weight: 800; border-top: 1px dashed var(--color-border) !important;">
+                         <span class="text-dark">TỔNG CỘNG</span>
+                         <span id="summary-total" class="text-primary" style="color: var(--color-primary) !important;" th:utext="${#numbers.formatDecimal((myCart != null ? myCart.finalAmount : 0) * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                      </div>
+                      
+                      <!-- Checkout Button -->
+                      <a th:href="@{/shoppingCartCustomer}" class="btn btn-checkout btn-lg btn-block mt-4" aria-label="Proceed to Checkout">
+                         Proceed to Checkout <i class="fas fa-arrow-right ml-2"></i>
+                      </a>
+                      
+                      <!-- Payment Methods -->
+                      <div class="mt-4">
+                         <span class="text-muted small d-block mb-2 font-weight-bold text-center">PHƯƠNG THỨC THANH TOÁN HỖ TRỢ</span>
+                         <div class="d-flex justify-content-center flex-wrap" style="gap: 6px;">
+                            <span class="badge badge-light border px-2.5 py-1.5" style="border-radius: 6px; font-size: 11px; font-weight: 700; color: #111827; background-color: #fff;"><i class="fab fa-apple-pay mr-1" style="color: #000; font-size: 13px;"></i>Apple Pay</span>
+                            <span class="badge badge-light border px-2.5 py-1.5" style="border-radius: 6px; font-size: 11px; font-weight: 700; color: #111827; background-color: #fff;"><i class="fab fa-google-pay mr-1" style="color: #4285F4; font-size: 13px;"></i>Google Pay</span>
+                            <span class="badge badge-light border px-2.5 py-1.5" style="border-radius: 6px; font-size: 11px; font-weight: 700; color: #111827; background-color: #fff;"><i class="fab fa-paypal mr-1" style="color: #003087; font-size: 12px;"></i>PayPal</span>
+                            <span class="badge badge-light border px-2.5 py-1.5" style="border-radius: 6px; font-size: 11px; font-weight: 700; color: #111827; background-color: #fff;"><i class="fab fa-cc-visa mr-1" style="color: #1A1F71; font-size: 12px;"></i>Visa</span>
+                            <span class="badge badge-light border px-2.5 py-1.5" style="border-radius: 6px; font-size: 11px; font-weight: 700; color: #111827; background-color: #fff;"><i class="fab fa-cc-mastercard mr-1" style="color: #EB001B; font-size: 12px;"></i>MasterCard</span>
+                         </div>
+                      </div>
+                      
+                      <!-- Trust Badges & Safe Checkout -->
+                      <div class="mt-4 pt-4 border-top" style="border-top: 1px solid var(--color-border) !important;">
+                         <div class="row text-left" style="row-gap: 12px; font-size: 12px; color: var(--color-text-secondary);">
+                            <div class="col-6 d-flex align-items-center" style="gap: 8px;">
+                               <i class="fas fa-undo text-success" style="font-size: 14px;"></i>
+                               <span class="font-weight-medium">Free Returns</span>
+                            </div>
+                            <div class="col-6 d-flex align-items-center" style="gap: 8px;">
+                               <i class="fas fa-lock text-success" style="font-size: 14px;"></i>
+                               <span class="font-weight-medium">SSL Secure Payment</span>
+                            </div>
+                            <div class="col-6 d-flex align-items-center" style="gap: 8px;">
+                               <i class="fas fa-shipping-fast text-success" style="font-size: 14px;"></i>
+                               <span class="font-weight-medium">Fast Delivery</span>
+                            </div>
+                            <div class="col-6 d-flex align-items-center" style="gap: 8px;">
+                               <i class="fas fa-headset text-success" style="font-size: 14px;"></i>
+                               <span class="font-weight-medium">Customer Support</span>
+                            </div>
+                         </div>
+                      </div>
+                      
+                   </div>
+                </div>
+               </div>
+         </div>
+         
+         <!-- "You May Also Like" Recommended Products Section -->
+         <div th:if="${recommendedProducts != null && !recommendedProducts.empty}" class="mt-5 pt-4 border-top" style="border-top: 1px solid var(--color-border) !important;">
+            <h3 class="font-weight-bold text-dark mb-4" style="font-size: 20px; letter-spacing: -0.3px;"><i class="far fa-thumbs-up mr-2 text-primary"></i>You May Also Like</h3>
+            
+            <div class="row">
+               <div th:each="prodInfo : ${recommendedProducts}" class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                  <div class="card h-100 shadow-sm border-0 position-relative" style="border-radius: var(--radius-md); overflow: hidden; background-color: var(--color-card); transition: transform 0.2s, box-shadow 0.2s;"
+                       onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='var(--shadow-soft)';" 
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                     
+                     <!-- Product Image -->
+                     <div class="position-relative d-flex justify-content-center align-items-center bg-light" style="height: 180px; overflow: hidden;">
+                        <img th:src="@{|/productImage?code=${prodInfo.code}|}" 
+                             class="w-100 h-100" 
+                             style="object-fit: cover;" 
+                             alt="Product Thumbnail">
+                        <!-- Mall badge if applicable -->
+                        <span th:if="${prodInfo.isMall}" class="badge badge-danger position-absolute" style="top: 8px; left: 8px; font-size: 9px; font-weight: 700; background-color: var(--color-danger); border: none;">Mall</span>
+                     </div>
+                     
+                     <!-- Card Body -->
+                     <div class="card-body p-3 d-flex flex-column justify-content-between">
+                        <div>
+                           <!-- Title clamped to 2 lines -->
+                           <h6 class="font-weight-bold text-dark mb-1 text-truncate-2" style="font-size: 14.5px; height: 40px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; line-height: 1.4; text-transform: capitalize;" th:utext="${prodInfo.name}">Tên sản phẩm</h6>
+                           
+                           <!-- Ratings -->
+                           <div class="d-flex align-items-center mb-2" style="gap: 4px;">
+                              <div class="text-warning d-flex" style="gap: 2px; font-size: 11px;">
+                                 <th:block th:each="star : ${#numbers.sequence(1, 5)}">
+                                    <i th:class="${star <= (prodInfo.rating != 0 ? prodInfo.rating : 4) ? 'fas fa-star' : 'far fa-star'}"></i>
+                                 </th:block>
+                              </div>
+                              <span class="text-muted small" th:utext="'(' + ${(prodInfo.salesCount != 0 ? prodInfo.salesCount : 12)} + ')'">(12)</span>
+                           </div>
+                        </div>
+                        
+                        <!-- Price and Add to Cart -->
+                        <div class="mt-2 pt-2 border-top d-flex align-items-center justify-content-between" style="border-top: 1px solid var(--color-border) !important;">
+                           <span class="font-weight-bold text-primary" style="font-size: 16px;" th:utext="${#numbers.formatDecimal(prodInfo.price * 1000, 1, 'POINT', 0, 'POINT')} + ' ₫'">0 ₫</span>
+                           <a th:href="@{|/buyProduct?code=${prodInfo.code}|}" class="btn btn-outline-primary btn-sm font-weight-bold px-2 py-1" style="border-radius: var(--radius-sm); font-size: 11.5px; border-color: var(--color-primary); color: var(--color-primary); transition: all 0.2s;"
+                              onmouseover="this.style.backgroundColor='var(--color-primary)'; this.style.color='#fff';"
+                              onmouseout="this.style.backgroundColor='transparent'; this.style.color='var(--color-primary)';">
+                              Add to Cart
+                           </a>
+                        </div>
+                     </div>
+                     
+                  </div>
+               </div>
+            </div>
+         </div>
+         
+      </div>
+
+      <!-- Custom Confirmation Modal -->
+      <div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 400px;">
+          <div class="modal-content border-0 shadow" style="border-radius: 16px;">
+            <div class="modal-body text-center p-4">
+              <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+              <h5 class="font-weight-bold text-dark mb-2">Xác nhận xóa?</h5>
+              <p class="text-muted small mb-4">Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng của mình không?</p>
+              
+              <div class="row no-gutters">
+                <div class="col-6 pr-2">
+                  <button type="button" class="btn btn-light btn-block font-weight-bold" data-dismiss="modal" style="border-radius: 8px;">Hủy</button>
+                </div>
+                <div class="col-6 pl-2">
+                  <button type="button" id="confirmDeleteBtn" class="btn btn-danger btn-block font-weight-bold" style="background-color: #d0011b; border-radius: 8px;">Xóa</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AJAX Operations Logic JavaScript -->
+      <script th:inline="javascript">
+         var pendingDeleteCode = null;
+
+         // Async function to adjust item quantity
+         function adjustQty(button, delta) {
+             var code = button.getAttribute('data-code');
+             var qtySpan = document.getElementById('qty-' + code);
+             var currentQty = parseInt(qtySpan.innerText);
+             var newQty = currentQty + delta;
+             
+             if (newQty <= 0) {
+                 return;
+             }
+             
+             // Get plus and minus buttons for this item card
+             var parentContainer = button.closest('.d-flex');
+             var minusBtn = parentContainer.querySelector('.qty-btn-custom:first-child');
+             var plusBtn = parentContainer.querySelector('.qty-btn-custom:last-child');
+             
+             // Add loading states & disable controls
+             qtySpan.classList.add('loading');
+             if (minusBtn) minusBtn.disabled = true;
+             if (plusBtn) plusBtn.disabled = true;
+             
+             // Prepare POST form body parameters
+             var formData = new URLSearchParams();
+             formData.append('code', code);
+             formData.append('quantity', newQty);
+             
+             // Fetch AJAX endpoint
+             fetch('/api/updateCartQuantity', {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/x-www-form-urlencoded'
+                 },
+                 body: formData
+             })
+             .then(response => response.json())
+             .then(data => {
+                 if (data.success) {
+                     // Update quantity display
+                     qtySpan.innerText = newQty;
+                     
+                     // Update item subtotal amount
+                     document.getElementById('amount-' + code).innerText = (parseFloat(data.lineAmount) * 1000).toLocaleString('vi-VN') + ' ₫';
+                     
+                     // Update global summaries
+                     document.getElementById('summary-subtotal').innerText = (parseFloat(data.amountTotal) * 1000).toLocaleString('vi-VN') + ' ₫';
+                     document.getElementById('summary-total').innerText = (parseFloat(data.amountTotal) * 1000).toLocaleString('vi-VN') + ' ₫';
+                     document.getElementById('summary-count').innerText = '[' + data.quantityTotal + ' SẢN PHẨM]';
+                     
+                     // Update page header items count
+                     var headerCount = document.getElementById('cart-header-count');
+                     if (headerCount) {
+                         headerCount.innerText = data.quantityTotal === 1 ? '1 Item' : data.quantityTotal + ' Items';
+                     }
+                     
+                     // Update navbar badge count
+                     var navbarBadge = document.querySelector('.action-icon-btn[title="Giỏ hàng"] .badge-counter');
+                     if (navbarBadge) {
+                         navbarBadge.innerText = data.quantityTotal;
+                     }
+                     
+                     showToastNotification('Đã cập nhật số lượng giỏ hàng thành công!', false);
+                 } else {
+                     showToastNotification(data.message || 'Lỗi khi cập nhật số lượng!', true);
+                 }
+             })
+             .catch(error => {
+                 console.error('Error:', error);
+                 showToastNotification('Có lỗi hệ thống xảy ra!', true);
+             })
+             .finally(() => {
+                 // Remove loading states & re-evaluate disabled status
+                 qtySpan.classList.remove('loading');
+                 if (plusBtn) plusBtn.disabled = false;
+                 if (minusBtn) minusBtn.disabled = (newQty <= 1);
+             });
+         }
+         
+         // Triggered from clicking the Remove link
+         function removeProductAjax(link, event) {
+             if (event) event.preventDefault();
+             var code = link.getAttribute('data-code');
+             pendingDeleteCode = code;
+             $('#deleteConfirmModal').modal('show');
+         }
+
+         // Bind click event on custom modal confirm delete button
+         document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+             if (pendingDeleteCode) {
+                 $('#deleteConfirmModal').modal('hide');
+                 performRemoveAjax(pendingDeleteCode);
+                 pendingDeleteCode = null;
+             }
+         });
+         
+         // Helper function to send remove POST request
+         function performRemoveAjax(code) {
+             var formData = new URLSearchParams();
+             formData.append('code', code);
+             
+             fetch('/api/removeCartProduct', {
+                 method: 'POST',
+                 headers: {
+                     'Content-Type': 'application/x-www-form-urlencoded'
+                 },
+                 body: formData
+             })
+             .then(response => response.json())
+             .then(data => {
+                 if (data.success) {
+                     // Animate out row
+                     var cardRow = document.getElementById('cart-row-' + code);
+                     cardRow.style.transition = 'opacity 200ms ease-in-out, transform 200ms ease-in-out';
+                     cardRow.style.opacity = '0';
+                     cardRow.style.transform = 'translateX(-20px)';
+                     
+                     showToastNotification('Đã xóa sản phẩm khỏi giỏ hàng!', false);
+                     
+                     setTimeout(function() {
+                         cardRow.remove();
+                         
+                         // Reload page if cart has become completely empty
+                         if (data.quantityTotal === 0) {
+                             window.location.reload();
+                         } else {
+                              // Update global summaries
+                              document.getElementById('summary-subtotal').innerText = (parseFloat(data.amountTotal) * 1000).toLocaleString('vi-VN') + ' ₫';
+                              document.getElementById('summary-total').innerText = (parseFloat(data.amountTotal) * 1000).toLocaleString('vi-VN') + ' ₫';
+                              document.getElementById('summary-count').innerText = '[' + data.quantityTotal + ' SẢN PHẨM]';
+                              
+                              // Update page header items count
+                              var headerCount = document.getElementById('cart-header-count');
+                              if (headerCount) {
+                                  headerCount.innerText = data.quantityTotal === 1 ? '1 Item' : data.quantityTotal + ' Items';
+                              }
+                              
+                              // Update navbar badge count
+                              var navbarBadge = document.querySelector('.action-icon-btn[title="Giỏ hàng"] .badge-counter');
+                              if (navbarBadge) {
+                                  navbarBadge.innerText = data.quantityTotal;
+                              }
+                         }
+                     }, 200);
+                 } else {
+                     showToastNotification(data.message || 'Lỗi khi xóa sản phẩm!', true);
+                 }
+             })
+             .catch(error => {
+                 console.error('Error:', error);
+                 showToastNotification('Có lỗi hệ thống xảy ra!', true);
+             });
+         }
+         
+          function applyVoucher() {
+              var input = document.getElementById('voucher-input');
+              var msgDiv = document.getElementById('voucher-message');
+              var code = input ? input.value.trim() : '';
+              if (!code) {
+                  msgDiv.style.display = 'block';
+                  msgDiv.className = 'small mt-1 font-weight-bold text-danger';
+                  msgDiv.textContent = 'Vui lòng nhập mã giảm giá!';
+                  return;
+              }
+              fetch('/api/v1/vouchers/apply', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ voucherCode: code })
+              })
+              .then(res => res.json())
+              .then(data => {
+                  msgDiv.style.display = 'block';
+                  if (data.success) {
+                      msgDiv.className = 'small mt-1 font-weight-bold text-success';
+                      msgDiv.textContent = data.message;
+                      var discSpan = document.getElementById('summary-voucher-discount');
+                      if (discSpan) discSpan.textContent = '- ' + (data.discountAmount * 1000).toLocaleString('vi-VN') + ' ₫';
+                      var totalSpan = document.getElementById('summary-total');
+                      if (totalSpan) totalSpan.textContent = (data.finalAmount * 1000).toLocaleString('vi-VN') + ' ₫';
+                      showToastNotification(data.message, false);
+                  } else {
+                      msgDiv.className = 'small mt-1 font-weight-bold text-danger';
+                      msgDiv.textContent = data.message;
+                      showToastNotification(data.message, true);
+                  }
+              })
+              .catch(err => {
+                  msgDiv.style.display = 'block';
+                  msgDiv.className = 'small mt-1 font-weight-bold text-danger';
+                  msgDiv.textContent = 'Không thể áp dụng mã giảm giá. Vui lòng thử lại!';
+              });
+          }
+
+          // Toast popup display function
+         function showToastNotification(msg, isError) {
+             var container = document.getElementById('snackbar-container');
+             if (!container) return;
+             
+             var toast = document.createElement('div');
+             toast.className = 'toast show shadow-lg border-0 mb-2';
+             toast.style.cssText = 'border-radius: 12px; color: #fff; transition: opacity 0.5s; opacity: 1;';
+             toast.style.backgroundColor = isError ? '#dc3545' : '#28a745';
+             
+             var icon = isError ? 'fa-exclamation-circle' : 'fa-check-circle';
+             
+             toast.innerHTML = `
+                 <div class="d-flex align-items-center p-3">
+                     <i class="fas ${icon} fa-lg mr-2"></i>
+                     <div class="toast-body font-weight-bold" style="flex: 1;">${msg}</div>
+                     <button type="button" class="close ml-2 text-white" onclick="this.closest('.toast').remove()" style="outline:none; text-shadow:none; opacity:0.8; font-size: 1.5rem;">
+                         <span aria-hidden="true">&times;</span>
+                     </button>
+                 </div>
+             `;
+             
+             container.appendChild(toast);
+             
+             // Auto-dismiss after 4 seconds
+             setTimeout(function() {
+                 toast.style.opacity = '0';
+                 setTimeout(function() { toast.remove(); }, 500);
+             }, 4000);
+         }
+      </script>
+
+      <th:block th:include="_footer"></th:block>
+       
+   </body>
+</html>

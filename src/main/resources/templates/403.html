@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>403 - Access Denied — ShoeShop</title>
+      <link rel="stylesheet" type="text/css" th:href="@{/style.css}" />
+      <th:block th:include="_header"></th:block>
+      <style>
+         .error-page-container {
+            max-width: 600px;
+            margin: 80px auto;
+            text-align: center;
+            padding: 40px 20px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid #E2E8F0;
+         }
+         .error-icon {
+            font-size: 64px;
+            color: #DC2626;
+            margin-bottom: 20px;
+         }
+         .error-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #0F172A;
+            margin-bottom: 12px;
+         }
+         .error-desc {
+            color: #64748B;
+            font-size: 15px;
+            margin-bottom: 28px;
+         }
+         .btn-home {
+            display: inline-block;
+            background-color: #2563EB;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 12px 24px;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+         }
+         .btn-home:hover {
+            background-color: #1D4ED8;
+            color: #ffffff;
+         }
+      </style>
+   </head>
+   <body>
+      <th:block th:include="_menu"></th:block>
+
+      <div class="error-page-container">
+         <i class="fas fa-shield-alt error-icon"></i>
+         <h1 class="error-title">403 — Access Denied</h1>
+         <p class="error-desc">Bạn không có quyền truy cập vào trang này. Vui lòng quay lại trang chủ hoặc đăng nhập với tài khoản có quyền truy cập phù hợp.</p>
+         <a th:href="@{/}" class="btn-home"><i class="fas fa-home mr-2"></i> Quay về Trang Chủ</a>
+      </div>
+
+      <th:block th:include="_footer"></th:block>
+   </body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+   <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Chỉnh Sửa Người Dùng — ShoeShop Admin</title>
+      <link rel="stylesheet" type="text/css" th:href="@{/style.css}" />
+      <th:block th:include="_header"></th:block>
+      <style>
+         .edit-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E2E8F0;
+            padding: 32px;
+         }
+         .form-group label {
+            font-weight: 600;
+            color: #334155;
+            font-size: 14px;
+            margin-bottom: 8px;
+         }
+         .form-control, .form-select {
+            border-radius: 10px;
+            padding: 12px 16px;
+            border: 1px solid #CBD5E1;
+            font-size: 14px;
+         }
+         .btn-save {
+            background: #2563EB;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 12px 28px;
+            border-radius: 10px;
+            border: none;
+         }
+         .btn-save:hover {
+            background: #1D4ED8;
+            color: #ffffff;
+         }
+      </style>
+   </head>
+   <body class="bg-light">
+      <th:block th:include="_menu"></th:block>
+
+      <div class="container my-5" style="max-width: 750px;">
+         <div class="edit-card">
+            <div class="d-flex align-items-center justify-content-between pb-3 mb-4 border-bottom">
+               <div>
+                  <h3 class="font-weight-bold text-dark mb-1"><i class="fas fa-user-cog text-primary mr-2"></i> Chỉnh Sửa Tài Khoản</h3>
+                  <p class="text-muted mb-0">Quản trị viên cập nhật thông tin và phân quyền cho người dùng.</p>
+               </div>
+               <span class="badge badge-primary px-3 py-2" th:text="${account.userName}">@username</span>
+            </div>
+
+            <form th:action="@{/admin/user/edit}" th:object="${profileForm}" method="POST">
+               <input type="hidden" th:field="*{userName}" />
+
+               <div class="row">
+                  <div class="col-md-6 form-group mb-3">
+                     <label><i class="far fa-user mr-1 text-primary"></i> Username</label>
+                     <input type="text" class="form-control bg-light" th:value="${account.userName}" readonly />
+                  </div>
+                  <div class="col-md-6 form-group mb-3">
+                     <label><i class="far fa-id-card mr-1 text-primary"></i> Họ và tên</label>
+                     <input type="text" class="form-control" th:field="*{fullName}" required />
+                  </div>
+               </div>
+
+               <div class="row">
+                  <div class="col-md-6 form-group mb-3">
+                     <label><i class="far fa-envelope mr-1 text-primary"></i> Email</label>
+                     <input type="email" class="form-control" th:field="*{email}" required />
+                  </div>
+                  <div class="col-md-6 form-group mb-3">
+                     <label><i class="fas fa-phone-alt mr-1 text-primary"></i> Số điện thoại</label>
+                     <input type="text" class="form-control" th:field="*{phoneNumber}" />
+                  </div>
+               </div>
+
+               <div class="row">
+                  <div class="col-md-4 form-group mb-4">
+                     <label><i class="fas fa-user-shield mr-1 text-primary"></i> Vai trò (Role)</label>
+                     <select class="form-control" th:field="*{userRole}">
+                        <option value="ROLE_USER">Khách hàng (ROLE_USER)</option>
+                        <option value="ROLE_ADMIN">Quản trị viên (ROLE_ADMIN)</option>
+                     </select>
+                  </div>
+                  <div class="col-md-4 form-group mb-4">
+                     <label><i class="fas fa-toggle-on mr-1 text-primary"></i> Kích hoạt (Active)</label>
+                     <select class="form-control" th:field="*{active}">
+                        <option value="true">Đang kích hoạt (TRUE)</option>
+                        <option value="false">Tắt kích hoạt (FALSE)</option>
+                     </select>
+                  </div>
+                  <div class="col-md-4 form-group mb-4">
+                     <label><i class="fas fa-lock mr-1 text-primary"></i> Khóa tài khoản</label>
+                     <select class="form-control" th:field="*{accountNonLocked}">
+                        <option value="true">Mở khóa (Normal)</option>
+                        <option value="false">Bị khóa (Locked)</option>
+                     </select>
+                  </div>
+               </div>
+
+               <div class="d-flex align-items-center justify-content-between pt-2">
+                  <a th:href="@{/admin/users}" class="btn btn-outline-secondary font-weight-bold px-4 py-2" style="border-radius: 10px;">Quay lại danh sách</a>
+                  <button type="submit" class="btn btn-save"><i class="fas fa-save mr-2"></i> Lưu cập nhật</button>
+               </div>
+            </form>
+
+         </div>
+      </div>
+
+      <th:block th:include="_footer"></th:block>
+   </body>
+</html>

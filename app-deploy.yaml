@@ -1,0 +1,41 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: shoeshop-service
+spec:
+  type: NodePort
+  ports:
+    - port: 8080       # Port nội bộ của Service K8s
+      targetPort: 8080 # Port Spring Boot EXPOSE trong Dockerfile
+      nodePort: 32000  # Port mở ra bên ngoài máy ảo Ubuntu (chọn ngẫu nhiên từ 30000-32767)
+  selector:
+    app: shoeshop-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shoeshop-app
+spec:
+  replicas: 1 # Vì máy tiệm Net rất mạnh, lát nữa bạn có thể nâng lên 3 để xem cách K8s chia tải (Load Balancing)
+  selector:
+    matchLabels:
+      app: shoeshop-app
+  template:
+    metadata:
+      labels:
+        app: shoeshop-app
+    spec:
+      containers:
+        - name: shoeshop-app
+          image: shoeshop-app:v1
+          imagePullPolicy: Never # Bắt buộc có dòng này để K8s lấy luôn image cục bộ vừa import, không lên mạng tìm
+          ports:
+            - containerPort: 8080
+          env:
+            # Ghi đè cấu hình kết nối Database trong ứng dụng của bạn bằng thông số K8s
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:mysql://mysql-service:3306/shoeshop_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "root"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "<YOUR_MYSQL_ROOT_PASSWORD>" # Nhập ĐÚNG mật khẩu bạn đã đặt ở file mysql-db.yaml
