@@ -3,7 +3,7 @@
 
 > **Môn học**: Trí tuệ Nhân tạo (Artificial Intelligence)  
 > **Dự án**: AI Quality Gate — Kiểm duyệt chất lượng ảnh sản phẩm E-commerce  
-> **Tác giả**: Leader A (Chuyên trách Deep Learning & Core AI)  
+> **Tác giả**: Trương Hoài Được (Chuyên trách Deep Learning & Core AI)  
 > **Sprint**: Sprint 1 — Task 2: Research YOLOv8 Architecture & Object Detection  
 
 ---
