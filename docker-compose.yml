@@ -1,10 +1,10 @@
 version: '3.8'
 
 services:
-  # 1. Cơ sở dữ liệu MySQL (Chạy Local)
-  shoeshop-mysql:
+  # 1. Cơ sở dữ liệu MySQL (Tái sử dụng image mysql:8.0 đã tải)
+  ai-shoeshop-db:
     image: mysql:8.0
-    container_name: shoeshop-mysql
+    container_name: shoeshop-ai-mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-truonghoaiduoc5}
@@ -12,91 +12,61 @@ services:
     ports:
       - "3307:3306"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
-    # Quan trọng: Đợi MySQL khởi tạo xong hoàn toàn
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - shoeshop-net
+      - shoeshop-ai-net
 
-  # 2. Khối AI Microservice
-  ai-service:
+  # 2. Khối AI Microservice (FastAPI)
+  ai-shoeshop-engine:
     build: 
       context: ./ai-service
-    container_name: shoeshop-ai
+    image: shoeshop-ai-engine:latest
+    container_name: shoeshop-ai-container
     restart: always
     ports:
       - "8000:8000"
     networks:
-      - shoeshop-net
+      - shoeshop-ai-net
 
   # 3. Ứng dụng Backend (Java Spring Boot)
-  shoeshop-backend:
+  ai-shoeshop-backend:
     build: .
-    container_name: shoeshop-api
+    image: shoeshop-backend-api:latest
+    container_name: shoeshop-ai-api
     restart: always
     environment:
-      # Trỏ vào container shoeshop-mysql ở trên
-      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-jdbc:mysql://shoeshop-mysql:3306/shoe_shopdb?useSSL=false&allowPublicKeyRetrieval=true}
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-jdbc:mysql://ai-shoeshop-db:3306/shoe_shopdb?useSSL=false&allowPublicKeyRetrieval=true}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME:-root}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-${MYSQL_ROOT_PASSWORD:-truonghoaiduoc5}}
-      - AI_SERVICE_URL=${AI_SERVICE_URL:-http://ai-service:8000}
+      - AI_SERVICE_URL=${AI_SERVICE_URL:-http://ai-shoeshop-engine:8000}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     networks:
-      - shoeshop-net
+      - shoeshop-ai-net
     depends_on:
-      shoeshop-mysql:
-        condition: service_healthy # Spring chỉ chạy khi DB đã "healthy"
-      ai-service:
+      ai-shoeshop-db:
+        condition: service_healthy
+      ai-shoeshop-engine:
         condition: service_started
 
-  # 4. Nginx
-  nginx-proxy:
+  # 4. Nginx Reverse Proxy (Tái sử dụng image nginx:alpine đã tải)
+  ai-shoeshop-nginx:
     image: nginx:alpine
-    container_name: shoeshop-nginx
+    container_name: shoeshop-ai-nginx
     restart: always
     ports:
       - "80:80"
     depends_on:
-      - shoeshop-backend
+      - ai-shoeshop-backend
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     networks:
-      - shoeshop-net
-
-  # 5. Giao diện phpMyAdmin trên Web
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: shoeshop-phpmyadmin
-    restart: always
-    ports:
-      - "8081:80"
-    environment:
-      PMA_HOST: shoeshop-mysql
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-truonghoaiduoc5}
-    depends_on:
-      - shoeshop-mysql
-    networks:
-      - shoeshop-net
-
-  # 6. Giao diện Swagger UI (API Documentation)
-  swagger-ui:
-    image: swaggerapi/swagger-ui
-    container_name: shoeshop-swagger
-    restart: always
-    ports:
-      - "8082:8080"
-    environment:
-      SWAGGER_JSON_URL: http://localhost/v3/api-docs
-    depends_on:
-      - shoeshop-backend
-    networks:
-      - shoeshop-net
-
+      - shoeshop-ai-net
 
 networks:
-  shoeshop-net:
+  shoeshop-ai-net:
     driver: bridge
