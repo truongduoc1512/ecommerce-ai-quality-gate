@@ -1,28 +1,25 @@
 """
-FastAPI Main Application Module
-===============================
-Định nghĩa các API endpoints cho AI Quality Gate Service:
-- GET  / : Health Check endpoint
-- GET  /health : Microservice Status endpoint
-- POST /api/v1/analyze : Endpoint kiểm duyệt ảnh sản phẩm tự động
+ShoeShop AI Quality Gate Service - FastAPI Application
+======================================================
+Production REST API service providing automated image quality checks:
+- Root & Health Check Endpoints
+- /api/v1/analyze: Image Quality Gate endpoint integrating YOLOv8 & OpenCV Blur engines
 """
 
-from fastapi import FastAPI, File, UploadFile, status
+import os
+from fastapi import FastAPI, File, UploadFile, Query, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app import __version__
-from app.image_qa import analyze_image
+from app.services.analysis_service import analyze_product_image_data
 
-# Khởi tạo ứng dụng FastAPI với OpenAPI metadata đầy đủ
+ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
+
 app = FastAPI(
-    title="ShoeShop AI Quality Gate Service",
-    description="Dịch vụ AI kiểm duyệt chất lượng hình ảnh sản phẩm tự động (YOLOv8 + OpenCV)",
-    version=__version__,
-    docs_url="/docs",
-    redoc_url="/redoc"
+    title="ShoeShop AI Quality Gate Engine API",
+    description="Microservice evaluating product image quality for ShoeShop E-commerce Platform",
+    version="1.0.0"
 )
 
-# Cấu hình CORS Middleware cho phép Spring Boot / Frontend gọi API
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -31,78 +28,83 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 
-
-@app.get("/", tags=["Health Check"])
-def root_health_check():
-    """Health check endpoint cho Docker & Load Balancer."""
+@app.get("/", summary="Root Health Endpoint")
+def read_root():
     return {
-        "service": "ShoeShop AI Quality Gate Service",
-        "status": "UP",
-        "version": __version__
-    }
-
-
-@app.get("/health", tags=["Health Check"])
-def health_status():
-    """Health check chi tiết."""
-    return {
+        "service": "ShoeShop AI Quality Gate Engine API",
         "status": "HEALTHY",
-        "microservice": "ai-service",
-        "version": __version__
+        "version": "1.0.0"
     }
 
 
-@app.post("/api/v1/analyze", tags=["Image Quality Assessment"])
-async def analyze_product_image(file: UploadFile = File(...)):
-    """
-    Endpoint nhận file ảnh sản phẩm từ Spring Boot Backend và phân tích chất lượng:
-    - 1. Độ sắc nét (Blur Score via OpenCV Laplacian Variance)
-    - 2. Nhận diện đối tượng sản phẩm (Object Detection & Coverage Ratio via YOLOv8)
-    
-    Returns JSON response với approved=true/false và các chỉ số đo lường chi tiết.
-    """
-    # 1. Kiểm tra định dạng file
+@app.get("/health", summary="Service Health Check")
+def health_check():
+    return {
+        "status": "UP",
+        "engine": "YOLOv8 + OpenCV Laplacian",
+        "uptime": "HEALTHY"
+    }
+
+
+@app.post(
+    "/api/v1/analyze",
+    summary="Analyze Product Image Quality",
+    response_class=JSONResponse
+)
+async def analyze_image_endpoint(
+    file: UploadFile = File(...),
+    blur_threshold: float = Query(50.0, ge=0.0, le=1000.0, description="Laplacian blur variance threshold"),
+    min_object_ratio: float = Query(0.08, ge=0.0, le=1.0, description="Minimum object coverage ratio")
+):
     filename = file.filename or "unknown.jpg"
-    ext = "." + filename.split(".")[-1].lower() if "." in filename else ""
-    
-    if ext not in ALLOWED_EXTENSIONS:
+    ext = os.path.splitext(filename)[1].lower()
+
+    # 1. HTTP 400 - Unsupported File Extension Check
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
         return JSONResponse(
             status_code=status.HTTP_400_BAD_REQUEST,
             content={
                 "approved": False,
                 "status": "REJECTED",
-                "reason": f"Định dạng file '{ext}' không được hỗ trợ. Vui lòng gửi ảnh (.jpg, .jpeg, .png, .webp, .bmp).",
+                "reason": f"Dinh dang file '{ext}' khong duoc ho tro. Vui long tai len file anh (.jpg, .jpeg, .png, .webp, .bmp).",
                 "filename": filename
             }
         )
 
-    # 2. Đọc file byte stream và gọi thuật toán AI
     try:
-        contents = await file.read()
-        if not contents or len(contents) == 0:
+        image_bytes = await file.read()
+
+        # 2. HTTP 400 - Empty File (0 Bytes) Check
+        if not image_bytes or len(image_bytes) == 0:
             return JSONResponse(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
                     "approved": False,
                     "status": "REJECTED",
-                    "reason": "File ảnh tải lên bị rỗng (0 bytes).",
+                    "reason": "File tai len rong (0 bytes). Vui long chon mot file anh hop le.",
                     "filename": filename
                 }
             )
 
-        # Gọi hàm xử lý phân tích AI
-        result = analyze_image(image_bytes=contents, filename=filename)
-        return JSONResponse(content=result)
+        # 3. AI Pipeline Analysis
+        result = analyze_product_image_data(
+            image_bytes=image_bytes,
+            filename=filename,
+            blur_threshold=blur_threshold,
+            min_object_ratio=min_object_ratio
+        )
 
-    except Exception as e:
+        return JSONResponse(status_code=status.HTTP_200_OK, content=result)
+
+    except Exception as exc:
+        # 4. HTTP 500 - Internal Server Error Safety Wrapper
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
                 "approved": False,
                 "status": "ERROR",
-                "reason": f"Lỗi hệ thống AI Service: {str(e)}",
+                "reason": f"Loi he thong AI Service: {str(exc)}",
                 "filename": filename
             }
         )
