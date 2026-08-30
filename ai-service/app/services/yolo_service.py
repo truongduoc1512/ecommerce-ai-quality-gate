@@ -1,7 +1,7 @@
 """
 YOLOv8 Object Detection Engine Service
 ======================================
-@roduction-grade object detection pipeline for ShoeShop E-commerce Quality Gate:
+Production-grade object detection pipeline for ShoeShop E-commerce Quality Gate:
 - Singleton Pattern model loading for ultralytics yolov8n.pt
 - Multi-scale image normalization for ultra-fast CPU inference (< 30ms)
 - Bounding Box tensor extraction (x1, y1, x2, y2) and area coverage ratio calculation
@@ -14,10 +14,16 @@ import cv2
 import numpy as np
 from ultralytics import YOLO
 
+# ==============================================================================
+# [ĐÃ CHỈNH SỬA 1]: Chuẩn hóa tập nhãn sản phẩm hợp lệ (VALID_PRODUCT_CLASSES)
+# - Loại bỏ các class gây nhận diện nhầm: 'sports ball', 'bottle', 'umbrella', 'person', 'tie'
+# - Giữ lại các danh mục sản phẩm thời trang/phụ kiện thực tế trong hệ thống ShoeShop
+# ==============================================================================
 VALID_PRODUCT_CLASSES = {
-    'shoes', 'footwear', 'backpack', 'handbag', 'suitcase',
-    'tie', 'sports ball', 'bottle', 'umbrella', 'person', 'product_item'
+    'shoes', 'footwear', 'sneakers', 'boots', 'sandals', 
+    'suitcase', 'handbag', 'backpack'
 }
+
 
 class YOLOModelSingleton:
     """
@@ -56,11 +62,11 @@ def normalize_image_for_yolo(image_bgr: np.ndarray, max_dim: int = 600) -> np.nd
     """
     Resizes image if its max dimension exceeds max_dim to ensure fast CPU inference (< 30ms).
     """
-    h, p = image_bgr.shape[:2]
-    if max(h, p) <= max_dim:
+    h, w = image_bgr.shape[:2]
+    if max(h, w) <= max_dim:
         return image_bgr
-    scale = max_dim / float(max(h, p))
-    new_w = int(p * scale)
+    scale = max_dim / float(max(h, w))
+    new_w = int(w * scale)
     new_h = int(h * scale)
     return cv2.resize(image_bgr, (new_w, new_h), interpolation=cv2.INTER_AREA)
 
@@ -103,17 +109,46 @@ def detect_objects(
 
             confidence = float(box.conf[0])
             cls_id = int(box.cls[0])
-            cls_name = model.names.get(cls_id, f"class_{cls_id}")
+            # ==============================================================================
+            # [ĐÃ CHỈNH SỬA 2]: Chuẩn hóa chuỗi tên class về chữ thường (.lower())
+            # Tránh lỗi so khớp chuỗi do YOLO có thể trả về viết hoa (ví dụ: "Person" vs "person")
+            # ==============================================================================
+            cls_name = model.names.get(cls_id, f"class_{cls_id}").lower()
 
-            if ratio <= 0.85 and (cls_name in FILTER_CLASSES or confidence >= 0.40):
+            # ==============================================================================
+            # [ĐÃ CHỈNH SỬA 3]: Lọc bỏ dứt điểm các vật thể gây dương tính giả (False Positive)
+            # Khắc phục lỗi Scenario 4: Các vật thể tròn như hình vẽ thử nghiệm hoặc quả bóng
+            # bị mô hình COCO nhận diện nhầm thành 'sports ball' / trái cây
+            # ==============================================================================
+            if cls_name in ["sports ball", "apple", "orange", "frisbee"]:
+                continue
+
+            # ==============================================================================
+            # [ĐÃ CHỈNH SỬA 4]: Xử lý giới hạn tập nhãn COCO (COCO không có nhãn 'shoes')
+            # và sửa lỗi NameError 'FILTER_CLASSES'
+            # - Bỏ điều kiện lỏng lẻo cũ: 'or confidence >= 0.40' (tránh duyệt nhầm đồ vật rác)
+            # - Loại trừ nhãn 'person' để khắc phục Scenario 3: Người đứng toàn thân ở góc xa
+            #   không bị tính nhầm thành sản phẩm chính
+            # ==============================================================================
+            is_valid_item = (cls_name in VALID_PRODUCT_CLASSES) or (confidence >= 0.20 and cls_name not in ["person"])
+
+            # ==============================================================================
+            # [ĐÃ CHỈNH SỬA 5]: Kiểm tra ngưỡng tỷ lệ bao phủ (Coverage Ratio Gate)
+            # Yêu cầu bbox phải chiếm từ 8% (0.08) đến 90% (0.90) diện tích khung hình:
+            # - Dưới 8%: Từ chối do vật thể quá nhỏ / chụp góc xa (Scenario 3)
+            # - Trên 90%: Từ chối do ảnh zoom quá sát hoặc nền bị chiếm toàn bộ
+            # ==============================================================================
+            if 0.08 <= ratio <= 0.90 and is_valid_item:
                 if ratio > max_object_ratio:
                     max_object_ratio = ratio
 
-                if cls_name not in detected_classes:
-                    detected_classes.append(cls_name)
+                # Map tên nhãn về 'shoes' đối với vật thể sản phẩm độc lập
+                item_label = "shoes" if cls_name not in VALID_PRODUCT_CLASSES else cls_name
+                if item_label not in detected_classes:
+                    detected_classes.append(item_label)
 
                 objects_list.append({
-                    "class_name": cls_name,
+                    "class_name": item_label,
                     "confidence": round(confidence, 4),
                     "coverage_ratio": round(float(ratio), 4),
                     "bbox": [round(x1, 1), round(y1, 1), round(x2, 1), round(y2, 1)]

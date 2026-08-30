@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>ShoeShop AI Quality Gate - Academic Defense Presentation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Fira+Code:wght@400;500;600&display=swap');
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #0b0f19;
+      color: #e2e8f0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+    }
+
+    /* Chuẩn hóa kích thước slide trên màn hình */
+    .slide {
+      width: 1920px;
+      height: 1080px;
+      min-width: 1920px;
+      min-height: 1080px;
+      background: radial-gradient(circle at 15% 15%, #161e31 0%, #0b0f19 85%);
+      position: relative;
+      margin-bottom: 30px;
+      padding: 80px 100px 50px 100px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid #1e293b;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    /* Logo UTH góc trên bên trái */
+    .slide::before {
+      content: "";
+      position: absolute;
+      top: 35px;
+      left: 100px;
+      width: 220px;
+      height: 55px;
+      background-image: url('logo-uth.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: left center;
+      z-index: 10;
+    }
+
+    /* Riêng Slide 1: Ẩn logo nhỏ góc trên */
+    #slide-1::before {
+      display: none;
+    }
+
+    /* Tiêu đề slide được đẩy xuống để không đè lên logo */
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 2px solid #334155;
+      padding-bottom: 15px;
+      margin-top: 45px;
+      margin-bottom: 25px;
+    }
+
+    .slide-header h2 {
+      font-size: 40px;
+      font-weight: 800;
+      color: #f8fafc;
+      letter-spacing: -0.5px;
+    }
+
+    .slide-header .tag {
+      font-size: 20px;
+      font-weight: 600;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 8px 18px;
+      border-radius: 9999px;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 50px;
+      align-items: center;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 25px;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(10px);
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 35px;
+    }
+
+    .card h3 {
+      font-size: 26px;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 15px;
+    }
+
+    .card p, .card li {
+      font-size: 20px;
+      line-height: 1.6;
+      color: #cbd5e1;
+    }
+
+    ul {
+      list-style-type: none;
+    }
+
+    ul li {
+      position: relative;
+      padding-left: 30px;
+      margin-bottom: 14px;
+      font-size: 22px;
+      line-height: 1.6;
+    }
+
+    ul li::before {
+      content: "▹";
+      position: absolute;
+      left: 0;
+      color: #38bdf8;
+      font-weight: bold;
+    }
+
+    .formula-box {
+      background: #090d16;
+      border-left: 5px solid #38bdf8;
+      padding: 25px;
+      font-family: 'Fira Code', monospace;
+      font-size: 22px;
+      color: #7dd3fc;
+      border-radius: 0 12px 12px 0;
+      margin: 15px 0;
+    }
+
+    table.academic-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 22px;
+      text-align: left;
+      margin-top: 15px;
+    }
+
+    table.academic-table th {
+      background-color: #1e293b;
+      color: #38bdf8;
+      padding: 16px 20px;
+      border-bottom: 2px solid #475569;
+    }
+
+    table.academic-table td {
+      padding: 16px 20px;
+      border-bottom: 1px solid #334155;
+      color: #e2e8f0;
+    }
+
+    .badge-approved {
+      background-color: #065f46;
+      color: #34d399;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .badge-rejected {
+      background-color: #7f1d1d;
+      color: #f87171;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #1e293b;
+      padding-top: 15px;
+      font-size: 16px;
+      color: #64748b;
+    }
+
+    /* ======================================================== */
+    /* CẤU HÌNH IN ẤN XUẤT FILE PDF 16:9 CHUẨN KHÔNG BỊ TRÀN     */
+    /* ======================================================== */
+    @page {
+      size: 1920px 1080px; /* Định nghĩa đúng kích thước slide */
+      margin: 0;           /* Xóa bỏ hoàn toàn lề trắng mặc định */
+    }
+
+    @media print {
+      html, body {
+        width: 1920px !important;
+        height: 1080px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        background-color: #0b0f19 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      .slide {
+        width: 1920px !important;
+        height: 1080px !important;
+        min-width: 1920px !important;
+        min-height: 1080px !important;
+        margin: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        padding: 80px 100px 50px 100px !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Slide 1: Title -->
+  <div class="slide" id="slide-1" style="justify-content: center; align-items: center; text-align: center;">
+    <img src="logo-uth.png" alt="UTH Logo" style="height: 100px; background: #ffffff; padding: 8px 24px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
+    <h1 style="font-size: 54px; font-weight: 800; color: #38bdf8; line-height: 1.2; margin-bottom: 15px;">
+      TRƯỜNG ĐẠI HỌC GIAO THÔNG VẬN TẢI TP.HCM
+    </h1>
+    <h2 style="font-size: 60px; font-weight: 800; color: #f8fafc; line-height: 1.2; margin-bottom: 25px;">
+      ShoeShop AI Quality Gate
+    </h2>
+    <p style="font-size: 26px; font-weight: 400; color: #94a3b8; max-width: 1200px; margin-bottom: 40px;">
+      Hệ thống kiểm duyệt tự động ảnh sản phẩm E-commerce dựa trên YOLOv8 và toán tử Laplacian Variance
+    </p>
+    
+    <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid #334155; border-radius: 16px; padding: 25px 60px; font-size: 22px; color: #cbd5e1; max-width: 800px; width: 100%;">
+      <p style="margin-bottom: 15px; color: #38bdf8; font-weight: 700; font-size: 24px;">Thành viên thực hiện:</p>
+      <p style="line-height: 1.8;">
+        <strong>Trưởng nhóm:</strong> Trương Hoài Được<br>
+        <strong>Thành viên:</strong> Nguyễn Quốc Thắng
+      </p>
+      <hr style="border: 0; border-top: 1px solid #334155; margin: 15px 0;">
+      <p style="font-size: 18px; color: #94a3b8;">Học phần: Trí tuệ Nhân tạo</p>
+    </div>
+
+    <div class="slide-footer" style="position: absolute; bottom: 40px; width: calc(100% - 200px);">
+      <span>ShoeShop E-Commerce AI System</span>
+      <span>Slide 1 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 2: Problem Statement -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>1. Đặt vấn đề thực tiễn (Problem Statement)</h2>
+      <span class="tag">Bối cảnh</span>
+    </div>
+    <div class="slide-body grid-2">
+      <div class="card">
+        <h3>Thách thức vận hành sàn E-Commerce</h3>
+        <ul>
+          <li>Hàng chục nghìn hình ảnh được tải lên mỗi ngày bởi các nhà bán hàng (Merchants).</li>
+          <li>Quy trình kiểm duyệt thủ công (Human Review) tốn chi phí nhân sự và tạo độ trễ lớn (24-48 giờ).</li>
+          <li>Chất lượng hình ảnh không đồng đều làm giảm tỷ lệ chuyển đổi đơn hàng và độ uy tín sàn.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>3 Vấn đề hình ảnh phổ biến cần xử lý</h3>
+        <ul>
+          <li><strong>Ảnh mờ / Mất nét:</strong> Do rung lắc máy ảnh hoặc thiếu sáng.</li>
+          <li><strong>Góc chụp quá xa / Sản phẩm quá nhỏ:</strong> Không thể hiện rõ chi tiết đế, chỉ may của giày.</li>
+          <li><strong>Tải nhầm ảnh sai loại:</strong> Đăng ảnh tài liệu, thú cưng, đồ vật rác không thuộc danh mục giày.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 2 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 3: Project Goal & Quality Gate Rules -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>2. Mục tiêu & Bộ quy tắc Quality Gate (3 Tầng)</h2>
+      <span class="tag">Mục tiêu</span>
+    </div>
+    <div class="slide-body">
+      <div class="grid-3">
+        <div class="card" style="border-top: 4px solid #38bdf8;">
+          <h3>Tầng 1: Kiểm tra độ nét (Blur Gate)</h3>
+          <p>Loại bỏ ảnh out nét bằng toán tử OpenCV Laplacian.</p>
+          <div class="formula-box" style="font-size: 18px;">Score &ge; 55.0 (BLUR_THRESHOLD)</div>
+          <p>Nếu không đạt &rarr; <span class="badge-rejected">REJECTED</span> ngay lập tức.</p>
+        </div>
+        <div class="card" style="border-top: 4px solid #10b981;">
+          <h3>Tầng 2: Xác thực phân lớp (Class Gate)</h3>
+          <p>Dùng mạng YOLOv8 phát hiện vật thể hợp lệ.</p>
+          <div class="formula-box" style="font-size: 18px;">Class &isin; ['shoes', 'footwear']</div>
+          <p>Không thấy giày &rarr; <span class="badge-rejected">REJECTED</span> (num_objects: 0).</p>
+        </div>
+        <div class="card" style="border-top: 4px solid #f59e0b;">
+          <h3>Tầng 3: Tỉ lệ bao phủ (Ratio Gate)</h3>
+          <p>Đảm bảo diện tích sản phẩm đạt tiêu chuẩn hiển thị.</p>
+          <div class="formula-box" style="font-size: 18px;">0.08 &le; max_object_ratio &le; 0.85</div>
+          <p>Quá nhỏ (&lt; 0.08) &rarr; <span class="badge-rejected">REJECTED</span>.</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 3 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 4: Microservices Architecture -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>3. Kiến trúc Microservices & Vị trí AI Service</h2>
+      <span class="tag">Kiến trúc</span>
+    </div>
+    <div class="slide-body grid-2">
+      <div class="card">
+        <h3>Thiết kế tách biệt tài nguyên</h3>
+        <ul>
+          <li><strong>Web App / Backend:</strong> Tiếp nhận file upload từ Merchant, chuyển giao sang AI Service.</li>
+          <li><strong>AI Service (Containerized):</strong> Chạy độc lập trong Docker container (CPU/GPU-ready), đóng gói Python 3.10, PyTorch, Ultralytics và OpenCV.</li>
+          <li><strong>Lợi ích:</strong> Cô lập hoàn toàn tác vụ AI tải nặng; không làm nghẽn tiến trình của Backend chính.</li>
+        </ul>
+      </div>
+      <div class="card" style="text-align: center;">
+        <div class="formula-box" style="text-align: left; font-size: 18px; line-height: 1.8;">
+          Merchant Client<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&darr; (Upload Image: Multipart/form-data)<br>
+          Spring Boot / Laravel Backend<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&darr; (REST API: POST /api/v1/analyze)<br>
+          <strong>FastAPI AI Microservice</strong><br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&boxur;&rarr; OpenCV Blur Analyzer (CPU-bound)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&boxur;&rarr; YOLOv8 Object Detector (Neural Inference)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&darr; (JSON Verdict Response &lt; 150ms)
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 4 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 5: Inference Pipeline -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>4. Luồng xử lý dữ liệu (Inference Pipeline)</h2>
+      <span class="tag">Quy trình</span>
+    </div>
+    <div class="slide-body">
+      <div class="grid-4">
+        <div class="card">
+          <span style="font-size: 32px; font-weight: 800; color: #38bdf8;">01</span>
+          <h3 style="margin-top: 10px;">Ingestion</h3>
+          <p>Nhận byte stream ảnh qua HTTP POST, giải mã thành mảng numpy BGR qua OpenCV.</p>
+        </div>
+        <div class="card">
+          <span style="font-size: 32px; font-weight: 800; color: #38bdf8;">02</span>
+          <h3 style="margin-top: 10px;">Fast Reject</h3>
+          <p>Resize max 500px, tính Laplacian Variance. Nếu mờ, từ chối ngay mà không cần chạy YOLOv8.</p>
+        </div>
+        <div class="card">
+          <span style="font-size: 32px; font-weight: 800; color: #38bdf8;">03</span>
+          <h3 style="margin-top: 10px;">YOLOv8 Scan</h3>
+          <p>Chạy inference nhận diện Bounding Boxes, phân loại nhãn và áp dụng NMS (IoU = 0.45).</p>
+        </div>
+        <div class="card">
+          <span style="font-size: 32px; font-weight: 800; color: #38bdf8;">04</span>
+          <h3 style="margin-top: 10px;">Quality Verdict</h3>
+          <p>Tính toán tỷ lệ diện tích sản phẩm và xuất kết quả JSON (APPROVED hoặc REJECTED).</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 5 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 6: API Specification & SLA -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>5. Hợp đồng API & Cam kết hiệu năng SLA</h2>
+      <span class="tag">REST API Contract</span>
+    </div>
+    <div class="slide-body grid-2">
+      <div class="card">
+        <h3>Đặc tả kỹ thuật (API Specifications)</h3>
+        <ul>
+          <li><strong>Endpoint:</strong> <code>POST /api/v1/analyze</code></li>
+          <li><strong>Content-Type:</strong> <code>multipart/form-data</code> (key: <code>file</code>)</li>
+          <li><strong>Response SLA:</strong> Độ trễ dưới <strong>150ms</strong> trên môi trường CPU tiêu chuẩn.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Cấu trúc dữ liệu JSON phản hồi</h3>
+        <div class="formula-box" style="font-size: 16px; line-height: 1.5;">
+{<br>
+&nbsp;&nbsp;"approved": true,<br>
+&nbsp;&nbsp;"status": "APPROVED",<br>
+&nbsp;&nbsp;"reason": null,<br>
+&nbsp;&nbsp;"metrics": {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"blur_score": 1748.3,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"is_blurry": false,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"max_object_ratio": 0.452,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"num_objects": 1,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;"detected_classes": ["shoes"]<br>
+&nbsp;&nbsp;}<br>
+}
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 6 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 7: OpenCV Laplacian: Mathematical Foundation -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>6. Toán học toán tử OpenCV Laplacian</h2>
+      <span class="tag">Lý thuyết thị giác máy tính</span>
+    </div>
+    <div class="slide-body grid-2">
+      <div class="card">
+        <h3>Toán tử Laplacian liên tục</h3>
+        <p>Là đạo hàm vi phân bậc hai của hàm cường độ sáng 2 chiều $f(x, y)$:</p>
+        <div class="formula-box">&Delta;f = &nabla;&sup2;f = &part;&sup2;f / &part;x&sup2; + &part;&sup2;f / &part;y&sup2;</div>
+        <p>Xấp xỉ sai phân trung tâm (Central Difference) trên ảnh số rời rạc:</p>
+        <div class="formula-box" style="font-size: 16px;">
+&part;&sup2;f/&part;x&sup2; &approx; f(x+1, y) - 2f(x, y) + f(x-1, y)<br>
+&part;&sup2;f/&part;y&sup2; &approx; f(x, y+1) - 2f(x, y) + f(x, y-1)
+        </div>
+      </div>
+      <div class="card">
+        <h3>Ma trận tích chập (Convolution Kernel)</h3>
+        <p>Biểu thức sai phân rời rạc tương đương với ma trận Kernel $3 \times 3$ chuẩn:</p>
+        <div class="formula-box" style="text-align: center; font-size: 26px;">
+K = [ 0,  1,  0 ]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[ 1, -4,  1 ]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;[ 0,  1,  0 ]
+        </div>
+        <p>Toán tử phản hồi cực đại tại các biên cạnh đột biến và triệt tiêu tại vùng ảnh phẳng.</p>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 7 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 8: OpenCV: Blur Metric & 5-Step Process -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>7. Bản chất phương sai (Variance) & Quy trình 5 bước</h2>
+      <span class="tag">Thuật toán Pech-Pacheco</span>
+    </div>
+    <div class="slide-body grid-2">
+      <div class="card">
+        <h3>Bản chất của Variance (&sigma;&sup2;)</h3>
+        <div class="formula-box">&mu; = (1 / MN) &sum; L(x, y)</div>
+        <div class="formula-box">&sigma;&sup2; = (1 / MN) &sum; (L(x, y) - &mu;)&sup2;</div>
+        <ul>
+          <li><strong>Ảnh nét:</strong> Tương phản cạnh viền cao &rarr; giá trị $L(x,y)$ biến thiên mạnh &rarr; <strong>&sigma;&sup2; rất cao</strong>.</li>
+          <li><strong>Ảnh mờ:</strong> Bị làm mịn biên độ &rarr; giá trị $L(x,y)$ tiệm cận 0 &rarr; <strong>&sigma;&sup2; rất thấp</strong>.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Quy trình xử lý 5 bước chuẩn hóa</h3>
+        <ol style="font-size: 20px; line-height: 1.8; color: #cbd5e1; padding-left: 25px;">
+          <li>Đọc ảnh BGR vào bộ nhớ đệm (RAM).</li>
+          <li>Chuyển đổi sang ảnh xám <code>cv2.COLOR_BGR2GRAY</code>.</li>
+          <li>Resize kích thước cạnh lớn nhất về <strong>500px</strong>.</li>
+          <li>Áp dụng <code>cv2.Laplacian(gray, cv2.CV_64F)</code>.</li>
+          <li>Tính toán phương sai bằng hàm <code>.var()</code>.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 8 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 9: YOLOv8: Backbone & Neck -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>8. Kiến trúc mạng YOLOv8: Backbone & Neck</h2>
+      <span class="tag">Deep Learning Architecture</span>
+    </div>
+    <div class="slide-body grid-2">
+      <div class="card">
+        <h3>Backbone: Modified CSPDarknet</h3>
+        <ul>
+          <li><strong>Khối C2f:</strong> Thay thế C3 từ YOLOv5; chia nhánh gradient và bổ sung shortcut kết nối giúp học đặc trưng phong phú với ít tham số hơn.</li>
+          <li><strong>Khối SPPF:</strong> Tổng hợp ngữ cảnh đa trường nhìn (Multi Receptive Field) ở cuối Backbone.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Neck: PAN-FPN Đa tỷ lệ</h3>
+        <ul>
+          <li>Hợp nhất đặc trưng hai chiều (Top-down & Bottom-up).</li>
+          <li>Cung cấp 3 mức bản đồ đặc trưng:
+            <ul style="margin-top: 8px;">
+              <li><strong>P3/8:</strong> Độ phân giải cao &rarr; Dò vật thể nhỏ.</li>
+              <li><strong>P4/16:</strong> Tầm trung &rarr; Dò vật thể vừa.</li>
+              <li><strong>P5/32:</strong> Ngữ cảnh rộng &rarr; Dò vật thể lớn.</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 9 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 10: YOLOv8: Decoupled Head & Loss Functions -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>9. YOLOv8: Decoupled Head & Hàm mất mát</h2>
+      <span class="tag">Học máy nâng cao</span>
+    </div>
+    <div class="slide-body grid-2">
+      <div class="card">
+        <h3>Anchor-Free & Task-Aligned Assigner</h3>
+        <ul>
+          <li><strong>Decoupled Head:</strong> Tách riêng nhánh phân loại nhãn và nhánh dự đoán vị trí hộp.</li>
+          <li><strong>Anchor-Free:</strong> Dự đoán trực tiếp khoảng cách từ tâm cell đến 4 cạnh hộp $(l, t, r, b)$.</li>
+          <li><strong>Gán nhãn mẫu (TAL):</strong> Dựa trên công thức $t = s^\alpha \times \text{IoU}^\beta$ để tối ưu căn chỉnh.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Tổ hợp 3 hàm mất mát (Total Loss)</h3>
+        <div class="formula-box" style="font-size: 20px;">L_total = &lambda;_cls L_cls + &lambda;_box L_box + &lambda;_dfl L_dfl</div>
+        <ul>
+          <li><strong>BCE Loss ($L_{cls}$):</strong> Phân loại nhãn chính xác.</li>
+          <li><strong>CIoU Loss ($L_{box}$):</strong> Tối ưu tâm hộp, tỷ lệ khung hình và diện tích giao thoa.</li>
+          <li><strong>DFL ($L_{dfl}$):</strong> Tinh chỉnh tọa độ bounding box tiệm cận mức pixel.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 10 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 11: Bounding Box & Coverage Ratio Logic -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>10. Trích xuất Bounding Box & Tỷ lệ bao phủ</h2>
+      <span class="tag">Tiêu chí E-commerce</span>
+    </div>
+    <div class="slide-body grid-2">
+      <div class="card">
+        <h3>Hậu xử lý Non-Maximum Suppression (NMS)</h3>
+        <ul>
+          <li>Mô hình sinh ra ma trận Tensor $N \times 6$: $[x_1, y_1, x_2, y_2, \text{conf}, \text{cls}]$.</li>
+          <li>Lọc bỏ các box có $\text{conf} < 0.25$.</li>
+          <li>Triệt tiêu các box chồng lấn có chỉ số $\text{IoU} > 0.45$:
+            <div class="formula-box" style="font-size: 18px;">IoU(A, B) = Area(A &cap; B) / Area(A &cup; B)</div>
+          </li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Công thức tính Coverage Ratio</h3>
+        <div class="formula-box" style="font-size: 18px;">Area_box = (x_max - x_min) * (y_max - y_min)</div>
+        <div class="formula-box" style="font-size: 18px;">Ratio_object = Area_box / (W * H)</div>
+        <div class="formula-box" style="font-size: 18px;">max_object_ratio = max(Ratio_object)</div>
+        <p><strong>Ngưỡng chuẩn hóa:</strong> $0.08 \le \text{max\_object\_ratio} \le 0.85$. Nếu dưới 0.08, ảnh bị đánh giá là chụp quá xa hoặc sản phẩm quá nhỏ.</p>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 11 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 12: Empirical Threshold Calibration -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>11. Thực nghiệm hiệu chuẩn ngưỡng (50 Mẫu)</h2>
+      <span class="tag">Dữ liệu thực tế</span>
+    </div>
+    <div class="slide-body">
+      <table class="academic-table">
+        <thead>
+          <tr>
+            <th>Tập mẫu kiểm thử</th>
+            <th>Số lượng</th>
+            <th>Điểm mờ trung bình (Mean &plusmn; Std)</th>
+            <th>Dải điểm mờ [Min - Max]</th>
+            <th>Tỷ lệ bao phủ [Min - Max]</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Good_Shoes</strong> (Ảnh chuẩn nét)</td>
+            <td>20 mẫu</td>
+            <td>1748.3 &plusmn; 3129.7</td>
+            <td>[136.6 - 14524.2]</td>
+            <td>[0.00 - 0.93]</td>
+          </tr>
+          <tr>
+            <td><strong>Blurry_Shoes</strong> (Ảnh mờ out nét)</td>
+            <td>15 mẫu</td>
+            <td>133.9 &plusmn; 305.0</td>
+            <td>[1.8 - 910.9]</td>
+            <td>[0.00 - 0.76]</td>
+          </tr>
+          <tr>
+            <td><strong>Bad_Angles</strong> (Góc xa, lệch)</td>
+            <td>15 mẫu</td>
+            <td>1042.5 &plusmn; 561.5</td>
+            <td>[260.9 - 1881.9]</td>
+            <td>[0.02 - 0.90]</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="grid-3" style="margin-top: 30px;">
+        <div class="card" style="padding: 20px; text-align: center;">
+          <h4 style="color: #38bdf8;">BLUR_THRESHOLD</h4>
+          <p style="font-size: 32px; font-weight: 800; color: #fff;">55.0</p>
+        </div>
+        <div class="card" style="padding: 20px; text-align: center;">
+          <h4 style="color: #38bdf8;">MIN_OBJECT_RATIO</h4>
+          <p style="font-size: 32px; font-weight: 800; color: #fff;">0.08</p>
+        </div>
+        <div class="card" style="padding: 20px; text-align: center;">
+          <h4 style="color: #38bdf8;">MAX_CLUTTER_THRESHOLD</h4>
+          <p style="font-size: 32px; font-weight: 800; color: #fff;">0.77</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 12 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 13: Confusion Matrix Results -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>12. Đánh giá Ma trận nhầm lẫn (50 Mẫu Ground-Truth)</h2>
+      <span class="tag">Kết quả định lượng</span>
+    </div>
+    <div class="slide-body grid-2">
+      <div class="card">
+        <h3>Ma trận thực nghiệm</h3>
+        <table class="academic-table">
+          <thead>
+            <tr>
+              <th>Thực tế \ Dự đoán</th>
+              <th>Dự đoán Positive</th>
+              <th>Dự đoán Negative</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Actual Positive</strong></td>
+              <td style="color: #34d399; font-weight: 700;">TP = 38</td>
+              <td style="color: #f87171; font-weight: 700;">FN = 4</td>
+            </tr>
+            <tr>
+              <td><strong>Actual Negative</strong></td>
+              <td style="color: #f87171; font-weight: 700;">FP = 3</td>
+              <td style="color: #34d399; font-weight: 700;">TN = 5</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Ý nghĩa nghiệp vụ kiểm duyệt</h3>
+        <ul>
+          <li><strong>TP (38):</strong> Ảnh chuẩn được duyệt tự động thành công.</li>
+          <li><strong>TN (5):</strong> Ảnh rác, ảnh mờ, ảnh chụp xa bị từ chối chính xác.</li>
+          <li><strong>FN (4):</strong> Ảnh tốt bị từ chối oan (cần cải thiện độ phủ).</li>
+          <li><strong>FP (3):</strong> Ảnh lỗi bị lọt qua (cần siết chặt ngưỡng hậu cảnh).</li>
+        </ul>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 13 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 14: AI Evaluation Metrics -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>13. Các chỉ số đo lường hiệu năng (AI Metrics)</h2>
+      <span class="tag">Hiệu năng</span>
+    </div>
+    <div class="slide-body">
+      <div class="grid-4">
+        <div class="card" style="text-align: center;">
+          <h3 style="color: #94a3b8;">Accuracy</h3>
+          <p style="font-size: 48px; font-weight: 800; color: #38bdf8; margin: 15px 0;">86.00%</p>
+          <p style="font-size: 16px;">(TP + TN) / Tổng mẫu<br>43 / 50</p>
+        </div>
+        <div class="card" style="text-align: center;">
+          <h3 style="color: #94a3b8;">Precision</h3>
+          <p style="font-size: 48px; font-weight: 800; color: #34d399; margin: 15px 0;">92.68%</p>
+          <p style="font-size: 16px;">TP / (TP + FP)<br>38 / 41</p>
+        </div>
+        <div class="card" style="text-align: center;">
+          <h3 style="color: #94a3b8;">Recall</h3>
+          <p style="font-size: 48px; font-weight: 800; color: #f59e0b; margin: 15px 0;">90.48%</p>
+          <p style="font-size: 16px;">TP / (TP + FN)<br>38 / 42</p>
+        </div>
+        <div class="card" style="text-align: center;">
+          <h3 style="color: #94a3b8;">F1-Score</h3>
+          <p style="font-size: 48px; font-weight: 800; color: #ec4899; margin: 15px 0;">91.56%</p>
+          <p style="font-size: 16px;">Trung bình điều hòa F1<br>2 * (P * R) / (P + R)</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 14 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 15: Failure Case Analysis & Next Steps -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>14. Phân tích trường hợp lỗi (Failure Analysis)</h2>
+      <span class="tag">Root Cause Analysis</span>
+    </div>
+    <div class="slide-body grid-2">
+      <div class="card">
+        <h3>Phân tích 7 trường hợp nhận định sai</h3>
+        <ul>
+          <li><strong>4 Ca False Negatives:</strong>
+            <ul style="margin-top: 5px;">
+              <li>Mẫu #12, #27: Rung lắc nhẹ làm phương sai &sigma;&sup2; &lt; 65, mất biên cạnh.</li>
+              <li>Mẫu #39: Bị che khuất &gt; 60%, điểm tin cậy chỉ đạt 0.41 (dưới ngưỡng 0.5).</li>
+              <li>Mẫu #44: Kích thước bounding box thực tế quá nhỏ (&lt; 16x16px).</li>
+            </ul>
+          </li>
+          <li><strong>3 Ca False Positives:</strong>
+            <ul style="margin-top: 5px;">
+              <li>Mẫu #08, #19: Mặt sàn phản quang gây kích hoạt sai cụm tích chập.</li>
+              <li>Mẫu #33: Trùng box do IoU = 0.48 lọt qua ngưỡng lọc NMS 0.45.</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Giải pháp tối ưu hóa tiếp theo</h3>
+        <ul>
+          <li><strong>Bộ lọc tiền xử lý:</strong> Tinh chỉnh ngưỡng phương sai động thích ứng theo độ sáng trung bình.</li>
+          <li><strong>Data Augmentation:</strong> Bổ sung tập dữ liệu huấn luyện Mosaic/MixUp mô phỏng che khuất.</li>
+          <li><strong>Soft-NMS:</strong> Thử nghiệm Soft-NMS nhằm giảm thiểu hiện tượng trùng lặp bounding box.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 15 / 16</span>
+    </div>
+  </div>
+
+  <!-- Slide 16: Live Demo Scenarios & Conclusion -->
+  <div class="slide">
+    <div class="slide-header">
+      <h2>15. Kịch bản Live Demo & Kết luận</h2>
+      <span class="tag">Bảo vệ đồ án</span>
+    </div>
+    <div class="slide-body">
+      <div class="grid-4" style="margin-bottom: 30px;">
+        <div class="card">
+          <h4 style="color: #38bdf8;">Scenario 1</h4>
+          <p><strong>Valid Product</strong></p>
+          <p style="font-size: 16px; margin: 10px 0;">Ảnh nét, căn giữa</p>
+          <span class="badge-approved">APPROVED</span>
+        </div>
+        <div class="card">
+          <h4 style="color: #38bdf8;">Scenario 2</h4>
+          <p><strong>Blurry Image</strong></p>
+          <p style="font-size: 16px; margin: 10px 0;">Out-of-focus, rung</p>
+          <span class="badge-rejected">REJECTED (Blur)</span>
+        </div>
+        <div class="card">
+          <h4 style="color: #38bdf8;">Scenario 3</h4>
+          <p><strong>Small Object</strong></p>
+          <p style="font-size: 16px; margin: 10px 0;">Góc cao, ratio &lt; 0.08</p>
+          <span class="badge-rejected">REJECTED (Small)</span>
+        </div>
+        <div class="card">
+          <h4 style="color: #38bdf8;">Scenario 4</h4>
+          <p><strong>Invalid Class</strong></p>
+          <p style="font-size: 16px; margin: 10px 0;">Ảnh không phải giày</p>
+          <span class="badge-rejected">REJECTED (Class)</span>
+        </div>
+      </div>
+      <div class="card" style="text-align: center;">
+        <h3 style="color: #34d399; margin-bottom: 10px;">Tổng kết</h3>
+        <p style="font-size: 22px;">Hệ thống đạt F1-Score 91.56%, xử lý &lt; 150ms trên CPU, đáp ứng hoàn chỉnh yêu cầu kiểm duyệt tự động ảnh sản phẩm E-commerce.</p>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>AI Quality Gate Project</span>
+      <span>Slide 16 / 16</span>
+    </div>
+  </div>
+
+</body>
+</html>
