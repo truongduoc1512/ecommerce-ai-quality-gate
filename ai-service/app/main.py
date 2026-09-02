@@ -67,7 +67,7 @@ async def analyze_image_endpoint(
             content={
                 "approved": False,
                 "status": "REJECTED",
-                "reason": f"Dinh dang file '{ext}' khong duoc ho tro. Vui long tai len file anh (.jpg, .jpeg, .png, .webp, .bmp).",
+                "reason": f"??nh d?ng file '{ext}' kh?ng ???c h? tr?. Vui l?ng t?i l?n file ?nh (.jpg, .jpeg, .png, .webp, .bmp).",
                 "filename": filename
             }
         )
@@ -82,7 +82,7 @@ async def analyze_image_endpoint(
                 content={
                     "approved": False,
                     "status": "REJECTED",
-                    "reason": "File tai len rong (0 bytes). Vui long chon mot file anh hop le.",
+                    "reason": "File t?i l?n r?ng (0 bytes). Vui l?ng ch?n m?t file ?nh h?p l?.",
                     "filename": filename
                 }
             )
@@ -104,7 +104,7 @@ async def analyze_image_endpoint(
             content={
                 "approved": False,
                 "status": "ERROR",
-                "reason": f"Loi he thong AI Service: {str(exc)}",
+                "reason": f"L?i h? th?ng AI Service: {str(exc)}",
                 "filename": filename
             }
         )
