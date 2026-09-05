@@ -1,7 +1,6 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  # 1. C? s? d? li?u MySQL 8.0
   ai-shoeshop-db:
     image: mysql:8.0
     container_name: shoeshop-ai-mysql
@@ -59,7 +58,11 @@ services:
         limits:
           memory: 768M
     networks:
-      - shoeshop-ai-net
+      shoeshop-ai-net:
+        aliases:
+          - ai-shoeshop-backend
+          - shoeshop-ai-api
+          - shoeshop-backend
     depends_on:
       ai-shoeshop-db:
         condition: service_healthy
@@ -78,8 +81,13 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     networks:
-      - shoeshop-ai-net
+      shoeshop-ai-net:
+        aliases:
+          - ai-shoeshop-nginx
+          - shoeshop-ai-nginx
+          - shoeshop-nginx
 
 networks:
   shoeshop-ai-net:
     driver: bridge
+
