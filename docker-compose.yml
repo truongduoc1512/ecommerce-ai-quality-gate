@@ -1,7 +1,6 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  # 1. Cơ sở dữ liệu MySQL (Tái sử dụng image mysql:8.0 đã tải)
   ai-shoeshop-db:
     image: mysql:8.0
     container_name: shoeshop-ai-mysql
@@ -13,14 +12,18 @@ services:
       - "3307:3306"
     command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - shoeshop-ai-net
+      shoeshop-ai-net:
+        aliases:
+          - ai-shoeshop-db
+          - shoeshop-ai-mysql
+          - shoeshop-mysql
 
-  # 2. Khối AI Microservice (FastAPI)
+  # 2. AI Quality Gate Microservice (FastAPI + YOLOv8 + OpenCV)
   ai-shoeshop-engine:
     build: 
       context: ./ai-service
@@ -30,30 +33,43 @@ services:
     ports:
       - "8000:8000"
     networks:
-      - shoeshop-ai-net
+      shoeshop-ai-net:
+        aliases:
+          - ai-shoeshop-engine
+          - shoeshop-ai-container
+          - ai-service
 
-  # 3. Ứng dụng Backend (Java Spring Boot)
+  # 3. Backend API (Java Spring Boot)
   ai-shoeshop-backend:
     build: .
     image: shoeshop-backend-api:latest
     container_name: shoeshop-ai-api
-    restart: always
+    restart: unless-stopped
     environment:
-      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-jdbc:mysql://ai-shoeshop-db:3306/shoe_shopdb?useSSL=false&allowPublicKeyRetrieval=true}
+      - JAVA_OPTS=-Xms256m -Xmx512m -XX:+UseG1GC
+      - SPRING_DATASOURCE_URL=${SPRING_DATASOURCE_URL:-jdbc:mysql://shoeshop-ai-mysql:3306/shoe_shopdb?useSSL=false&allowPublicKeyRetrieval=true&connectTimeout=30000&socketTimeout=30000}
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME:-root}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD:-${MYSQL_ROOT_PASSWORD:-truonghoaiduoc5}}
       - AI_SERVICE_URL=${AI_SERVICE_URL:-http://ai-shoeshop-engine:8000}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    deploy:
+      resources:
+        limits:
+          memory: 768M
     networks:
-      - shoeshop-ai-net
+      shoeshop-ai-net:
+        aliases:
+          - ai-shoeshop-backend
+          - shoeshop-ai-api
+          - shoeshop-backend
     depends_on:
       ai-shoeshop-db:
         condition: service_healthy
       ai-shoeshop-engine:
         condition: service_started
 
-  # 4. Nginx Reverse Proxy (Tái sử dụng image nginx:alpine đã tải)
+  # 4. Nginx Reverse Proxy
   ai-shoeshop-nginx:
     image: nginx:alpine
     container_name: shoeshop-ai-nginx
@@ -65,8 +81,13 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     networks:
-      - shoeshop-ai-net
+      shoeshop-ai-net:
+        aliases:
+          - ai-shoeshop-nginx
+          - shoeshop-ai-nginx
+          - shoeshop-nginx
 
 networks:
   shoeshop-ai-net:
     driver: bridge
+
