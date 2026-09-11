@@ -10,9 +10,9 @@ import numpy as np
 from app.services.blur_service import calculate_blur_score
 from app.services.yolo_service import detect_objects
 
-DEFAULT_BLUR_THRESHOLD = 50.0
-DEFAULT_MIN_OBJECT_RATIO = 0.08
-DEFAULT_MAX_CLUTTER_THRESHOLD = 0.14
+DEFAULT_BLUR_THRESHOLD = 50.0  # Ngưỡng sắc nét tối thiểu (Laplacian Variance)
+DEFAULT_MIN_OBJECT_RATIO = 0.08  # Tỷ lệ diện tích tối thiểu của sản phẩm (8%)
+DEFAULT_MAX_CLUTTER_THRESHOLD = 0.14 # Ngưỡng rác / nhiễu nền
 
 
 def analyze_product_image_data(
@@ -28,6 +28,7 @@ def analyze_product_image_data(
     2. Stage 2: YOLOv8 Object Detection and Coverage Ratio Extraction
     3. Stage 3: Heuristic Centering, Border Margin, and Aspect Ratio Angle Check
     """
+    # Bước 1: Giải mã byte ảnh & Kiểm tra tính toàn vẹn (Validation)
     nparr = np.frombuffer(image_bytes, np.uint8)
     image_bgr = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
 
